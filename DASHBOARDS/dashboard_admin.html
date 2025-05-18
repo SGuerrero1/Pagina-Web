@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodApp - Panel de Administrador</title>
+    <!-- Enlace correcto al CSS de admin -->
+    <link rel="stylesheet" href="admin.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Contenido del Dashboard (Administrador) -->
+    <div class="dashboard admin-dashboard" id="admin-dashboard">
+        <nav class="sidebar">
+            <div class="logo">
+                <i class="fas fa-utensils"></i>
+                <h2>FoodApp</h2>
+            </div>
+            <ul class="menu">
+                <li class="active"><a href="#"><i class="fas fa-home"></i> Inicio</a></li>
+                <li><a href="#" class="feature-link"><i class="fas fa-users"></i> Usuarios</a></li>
+                <li><a href="#" class="feature-link"><i class="fas fa-store"></i> Restaurantes</a></li>
+                <li><a href="#" class="feature-link"><i class="fas fa-hamburger"></i> Platos</a></li>
+                <li><a href="#" class="feature-link"><i class="fas fa-chart-bar"></i> Estadísticas</a></li>
+                <li><a href="#" class="feature-link"><i class="fas fa-cog"></i> Configuración</a></li>
+                <li><a href="#" id="admin-logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            <header>
+                <h1>Panel de Administrador</h1>
+                <div class="user-info">
+                    <span id="admin-username">Admin</span>
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </header>
+            <div class="dashboard-cards modern-cards">
+                <div class="card modern-card" id="card-usuarios">
+                    <div class="card-icon"><i class="fas fa-users"></i></div>
+                    <div class="card-info">
+                        <h3>Usuarios</h3>
+                        <p><span id="usuarios-activos">0</span> activos</p>
+                    </div>
+                </div>
+                <div class="card modern-card" id="card-platos">
+                    <div class="card-icon"><i class="fas fa-hamburger"></i></div>
+                    <div class="card-info">
+                        <h3>Platos</h3>
+                        <p><span id="platos-disponibles">0</span> disponibles</p>
+                    </div>
+                </div>
+                <div class="card modern-card" id="card-pedidos">
+                    <div class="card-icon"><i class="fas fa-shopping-cart"></i></div>
+                    <div class="card-info">
+                        <h3>Pedidos</h3>
+                        <p><span id="pedidos-hoy">0</span> hoy</p>
+                        <button id="ver-pedidos-admin" class="modern-btn" style="margin-top:10px;width:100%;background:#2257ff;color:#fff;border:none;padding:8px 0;border-radius:8px;font-weight:500;cursor:pointer;">Ver Pedidos</button>
+                    </div>
+                </div>
+            </div>
+            <div class="data-tables modern-tables">
+                <div class="table-container modern-table-container">
+                    <h2>Últimos Usuarios Registrados</h2>
+                    <table class="modern-table" id="tabla-ultimos-usuarios">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Correo</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- JS insertará aquí los usuarios -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-container modern-table-container">
+                    <h2>Restaurantes Recientes</h2>
+                    <table class="modern-table" id="tabla-restaurantes-recientes">
+                        <thead>
+                            <tr>
+                                <th>Restaurante</th>
+                                <th>Platos</th>
+                                <th>Calificación</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- JS insertará aquí los restaurantes -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Contenedor para modal de ubicaciones de restaurantes -->
+            <div id="modal-restaurantes" style="display:none;"></div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="admin.js"></script>
+    <script>
+        // Función para cerrar sesión con overlay visual (estilo restaurante)
+        const logoutButton = document.getElementById('admin-logout');
+        if (logoutButton) {
+            logoutButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                // Mostrar overlay visual
+                const overlay = document.createElement('div');
+                overlay.style.position = 'fixed';
+                overlay.style.top = 0;
+                overlay.style.left = 0;
+                overlay.style.width = '100vw';
+                overlay.style.height = '100vh';
+                overlay.style.background = 'rgba(0,0,0,0.5)';
+                overlay.style.display = 'flex';
+                overlay.style.alignItems = 'center';
+                overlay.style.justifyContent = 'center';
+                overlay.style.zIndex = 20000;
+                overlay.innerHTML = `<div style="background:#fff;padding:40px 32px;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.18);font-size:1.3rem;color:#333;display:flex;flex-direction:column;align-items:center;gap:18px;">
+                    <i class='fas fa-sign-out-alt' style='font-size:2.5rem;color:#ff5722;'></i>
+                    <span>¡Has cerrado sesión correctamente!</span>
+                </div>`;
+                document.body.appendChild(overlay);
+                // Limpiar datos de sesión
+                localStorage.removeItem('rol');
+                localStorage.removeItem('userRole');
+                // Redirigir después de 1.5 segundos
+                setTimeout(() => {
+                    window.location.href = '../login_page.html';
+                }, 1500);
+            });
+        }
+        // Mostrar ubicaciones de restaurantes al hacer clic en 'Restaurantes'
+        document.addEventListener('DOMContentLoaded', function() {
+            const restaurantesMenu = document.querySelector('.menu li a i.fas.fa-store')?.parentElement;
+            if (restaurantesMenu) {
+                restaurantesMenu.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    mostrarModalRestaurantes();
+                });
+            }
+            function mostrarModalRestaurantes() {
+                const modal = document.getElementById('modal-restaurantes');
+                modal.style.display = 'flex';
+                modal.style.position = 'fixed';
+                modal.style.top = 0;
+                modal.style.left = 0;
+                modal.style.width = '100vw';
+                modal.style.height = '100vh';
+                modal.style.background = 'rgba(0,0,0,0.4)';
+                modal.style.alignItems = 'center';
+                modal.style.justifyContent = 'center';
+                modal.style.zIndex = 10000;
+                modal.innerHTML = `
+                <div style="background:#fff;padding:32px 24px 24px 24px;border-radius:16px;min-width:340px;max-width:98vw;max-height:92vh;overflow:auto;position:relative;box-shadow:0 8px 32px rgba(0,0,0,0.18);">
+                    <h2 style='margin-bottom:18px;text-align:center;'>Ubicación de Restaurantes</h2>
+                    <button id='close-restaurantes-modal' style='position:absolute;top:12px;right:12px;font-size:22px;background:none;border:none;cursor:pointer;'>&times;</button>
+                    <ul style='list-style:none;padding:0;'>
+                        <li style='margin-bottom:18px;'>
+                            <b>La Trattoria</b><br>
+                            Dirección: Calle 123 #45-67, Ciudad A<br>
+                            <span style='color:#888;'>Lat: 4.710989, Lon: -74.072092</span><br>
+                            <a href="https://www.google.com/maps?q=4.710989,-74.072092" target="_blank" style="color:#2257ff;text-decoration:underline;font-size:0.98em;">Ver en Google Maps</a>
+                        </li>
+                        <li style='margin-bottom:18px;'>
+                            <b>Burgers & More</b><br>
+                            Dirección: Av. Siempre Viva 742, Ciudad B<br>
+                            <span style='color:#888;'>Lat: 6.25184, Lon: -75.56359</span><br>
+                            <a href="https://www.google.com/maps?q=6.25184,-75.56359" target="_blank" style="color:#2257ff;text-decoration:underline;font-size:0.98em;">Ver en Google Maps</a>
+                        </li>
+                        <li>
+                            <b>Sushi Express</b><br>
+                            Dirección: Cra. 7 #156-78, Ciudad C<br>
+                            <span style='color:#888;'>Lat: 10.96854, Lon: -74.78132</span><br>
+                            <a href="https://www.google.com/maps?q=10.96854,-74.78132" target="_blank" style="color:#2257ff;text-decoration:underline;font-size:0.98em;">Ver en Google Maps</a>
+                        </li>
+                    </ul>
+                </div>
+                `;
+                document.getElementById('close-restaurantes-modal').onclick = () => {
+                    modal.style.display = 'none';
+                };
+                modal.onclick = function(e) { if (e.target === modal) modal.style.display = 'none'; };
+            }
+        });
+        // --- LOGIN DE ADMIN Y RESTAURANTE DESDE USUARIOS CREADOS EN CONFIGURACIÓN ---
+        // Al hacer login, buscar en localStorage 'admins' y 'restaurantes' además de los usuarios fijos
+        // (esto debe ir en login.js, pero aquí va la lógica para que los usuarios creados puedan acceder)
+        // En el archivo login.js, asegúrate de que al intentar login:
+        // 1. Si el usuario es admin, buscar en localStorage 'admins' (array de objetos con email y password)
+        // 2. Si el usuario es restaurante, buscar en localStorage 'restaurantes' (array de objetos con email y password)
+        // 3. Si coincide, permitir acceso y guardar el rol correspondiente en localStorage
+        // Ejemplo de código a agregar en login.js:
+        /*
+        const admins = JSON.parse(localStorage.getItem('admins')) || [];
+        const restaurantes = JSON.parse(localStorage.getItem('restaurantes')) || [];
+        const adminEncontrado = admins.find(a => a.email === username && a.password === password);
+        const restEncontrado = restaurantes.find(r => r.email === username && r.password === password);
+        if (adminEncontrado) {
+          localStorage.setItem('rol', 'admin');
+          localStorage.setItem('userRole', 'admin');
+          window.location.href = 'DASHBOARDS/dashboard_admin.html';
+          return;
+        }
+        if (restEncontrado) {
+          localStorage.setItem('rol', 'restaurante');
+          localStorage.setItem('userRole', 'restaurant');
+          window.location.href = 'DASHBOARDS/dashboard_restaurante.html';
+          return;
+        }
+        */
+    </script>
+</body>
+</html>

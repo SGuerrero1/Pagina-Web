@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login - FoodApp</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+</head>
+<body>
+  <div class="login-container">
+    <div class="left-panel">
+      <h1>Bienvenidos a FoodApp</h1>
+      <div class="logo">
+        <i class="fas fa-utensils"></i>
+      </div>
+      <p class="subtitle">Si aún no tienes una cuenta por favor regístrese aquí</p>
+      <a href="#" class="register-btn" id="register-btn">Registrarse como Cliente</a>
+      <div id="registro-cliente" class="form-container">
+        <form id="form-registro">
+          <div class="form-group">
+            <input type="text" class="form-control" placeholder="Nombre completo" required>
+          </div>
+          <div class="form-group">
+            <input type="email" class="form-control" placeholder="Correo electrónico" required>
+          </div>
+          <div class="form-group">
+            <input type="password" class="form-control" placeholder="Contraseña" required>
+          </div>
+          <div class="form-group">
+            <input type="password" class="form-control" placeholder="Confirmar contraseña" required>
+          </div>
+          <div class="form-group">
+            <input type="tel" class="form-control" placeholder="Teléfono" required>
+          </div>
+          <div class="form-group">
+            <input type="text" class="form-control" placeholder="Dirección" required>
+          </div>
+          <div class="form-group">
+            <input type="text" class="form-control" placeholder="Ciudad" required>
+          </div>
+          <div class="form-group">
+            <input type="text" class="form-control" placeholder="Código postal" required>
+          </div>
+          <div class="form-group">
+            <select class="form-control">
+              <option value="" disabled selected>Seleccione país</option>
+              <option value="mx">México</option>
+              <option value="es">España</option>
+              <option value="co">Colombia</option>
+              <option value="ar">Argentina</option>
+              <option value="cl">Chile</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-container">
+              <input type="checkbox" required>
+              <span class="checkmark"></span>
+              Acepto los términos y condiciones
+            </label>
+          </div>
+          <button type="submit" class="login-btn">Crear Cuenta</button>
+        </form>
+      </div>
+    </div>
+    <div class="right-panel">
+      <h2 class="login-title">Iniciar Sesión</h2>
+      
+      <div class="social-login">
+        <div class="social-btn" id="login-google" title="Iniciar sesión con Google"><span class="icon"><i class="fab fa-google"></i></span></div>
+        <div class="social-btn" id="login-facebook" title="Iniciar sesión con Facebook"><span class="icon"><i class="fab fa-facebook-f"></i></span></div>
+        <div class="social-btn" id="login-instagram" title="Iniciar sesión con Instagram"><span class="icon"><i class="fab fa-instagram"></i></span></div>
+        <div class="social-btn" id="login-twitter" title="Iniciar sesión con Twitter"><span class="icon"><i class="fab fa-twitter"></i></span></div>
+      </div>
+      
+      <p class="separator">o Iniciar Sesión con una cuenta</p>
+      
+      <form id="login-form">
+        <div class="form-group">
+          <input type="text" id="username" class="form-control" placeholder="Usuario" required>
+        </div>
+        <div class="form-group">
+          <input type="password" id="password" class="form-control" placeholder="Contraseña" required>
+        </div>
+        <div id="login-error" class="error-message"></div>
+        <button type="submit" class="login-btn">Iniciar Sesión</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="login.js"></script>
+  <script src="registro.js"></script>
+  <script>
+  // Simulación de login social
+  function socialLogin(nombre, email, img) {
+    // Simula un usuario cliente
+    const cliente = {
+      nombre: nombre,
+      email: email,
+      img: img,
+      rol: 'cliente'
+    };
+    localStorage.setItem('clienteRegistrado', JSON.stringify(cliente));
+    localStorage.setItem('rol', 'cliente');
+    window.location.href = 'DASHBOARDS/dashboard_cliente.html';
+  }
+  document.getElementById('login-google').onclick = function() {
+    socialLogin('Usuario Google', 'google@foodapp.com', 'https://ui-avatars.com/api/?name=Google&background=4285F4&color=fff');
+  };
+  document.getElementById('login-facebook').onclick = function() {
+    socialLogin('Usuario Facebook', 'facebook@foodapp.com', 'https://ui-avatars.com/api/?name=Facebook&background=1877F2&color=fff');
+  };
+  document.getElementById('login-instagram').onclick = function() {
+    socialLogin('Usuario Instagram', 'instagram@foodapp.com', 'https://ui-avatars.com/api/?name=Instagram&background=E1306C&color=fff');
+  };
+  document.getElementById('login-twitter').onclick = function() {
+    socialLogin('Usuario Twitter', 'twitter@foodapp.com', 'https://ui-avatars.com/api/?name=Twitter&background=1DA1F2&color=fff');
+  };
+  </script>
+</body>
+</html>

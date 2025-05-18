@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodApp - Panel de Restaurante</title>
+    <link rel="stylesheet" href="restaurante.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Contenido del Dashboard (Restaurante) -->
+    <div class="dashboard restaurant-dashboard" id="restaurant-dashboard">
+        <nav class="sidebar">
+            <div class="logo">
+                <i class="fas fa-utensils"></i>
+                <h2>FoodApp</h2>
+            </div>
+            <ul class="menu">
+                <li class="active"><a href="#"><i class="fas fa-home"></i> Inicio</a></li>
+                <li><a href="#" class="feature-link"><i class="fas fa-hamburger"></i> Platos</a></li>
+                <li><a href="#" class="feature-link"><i class="fas fa-plus-circle"></i> Nuevo Plato</a></li>
+                <li><a href="#" class="feature-link"><i class="fas fa-clipboard-list"></i> Pedidos</a></li>
+                <li><a href="#" class="feature-link"><i class="fas fa-map-marker-alt"></i> GPS</a></li>
+                <li><a href="#" class="feature-link"><i class="fas fa-cog"></i> Configuración</a></li>
+                <li><a href="#" id="restaurant-logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            <header>
+                <h1>Panel de Restaurante</h1>
+                <div class="user-info">
+                    <span>Restaurante</span>
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </header>
+            <div class="dashboard-cards">
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-clipboard-list"></i></div>
+                    <div class="card-info">
+                        <h3>Pedidos Pendientes</h3>
+                        <p>8 pedidos</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-hamburger"></i></div>
+                    <div class="card-info">
+                        <h3>Platos Activos</h3>
+                        <p>24 platos</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-star"></i></div>
+                    <div class="card-info">
+                        <h3>Valoración</h3>
+                        <p>4.8/5.0</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-dollar-sign"></i></div>
+                    <div class="card-info">
+                        <h3>Ingresos Hoy</h3>
+                        <p>$436.50</p>
+                    </div>
+                </div>
+            </div>
+            <div class="data-tables">
+                <div class="table-container">
+                    <h2>Pedidos Recientes</h2>
+                    <table id="tabla-pedidos-recientes">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Cliente</th>
+                                <th>Platos</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- JS insertará aquí los pedidos reales -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="restaurant-actions">
+                <h2>Acciones Rápidas</h2>
+                <div class="action-buttons">
+                    <button class="btn-secondary feature-link"><i class="fas fa-plus-circle"></i> Añadir Plato</button>
+                    <button class="btn-secondary feature-link"><i class="fas fa-cog"></i> Configurar Precios</button>
+                    <button class="btn-secondary feature-link"><i class="fas fa-map-marker-alt"></i> Ver Mapa</button>
+                </div>
+            </div>
+        </main>
+    </div> 
+    <script src="script.js"></script>
+    <script src="rest.js"></script>
+    <script>
+        // Función para cerrar sesión
+        const logoutButton = document.getElementById('restaurante-logout');
+        if (logoutButton) {
+            logoutButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                // Limpia datos de sesión
+                localStorage.removeItem('rol');
+                localStorage.removeItem('userRole');
+                // Redirige al login
+                window.location.href = '../login_page.html';
+            });
+        }
+
+        // --- MOSTRAR PEDIDOS REALES EN LA TABLA ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const tablaPedidos = document.getElementById('tabla-pedidos-recientes').querySelector('tbody');
+            const valoracionInfo = document.querySelector('.dashboard-cards .card-info h3')?.textContent?.includes('Valoración')
+                ? document.querySelector('.dashboard-cards .card-info p')
+                : null;
+            function calcularValoracionRestaurante() {
+                // Recorre todas las calificaciones de platos de todos los clientes
+                let total = 0, count = 0;
+                for (let key in localStorage) {
+                    if (key.startsWith('calificacionesPlatos_')) {
+                        try {
+                            const calObj = JSON.parse(localStorage.getItem(key));
+                            for (let plato in calObj) {
+                                total += calObj[plato];
+                                count++;
+                            }
+                        } catch {}
+                    }
+                }
+                if (valoracionInfo) {
+                    if (count === 0) {
+                        valoracionInfo.textContent = 'Sin valoraciones';
+                    } else {
+                        const avg = (total / count).toFixed(2);
+                        valoracionInfo.textContent = `${avg}/5.0`;
+                    }
+                }
+            }
+            function renderPedidos() {
+                let pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+                if (pedidos.length === 0) {
+                    tablaPedidos.innerHTML = `<tr><td colspan='6' style='color:#888;text-align:center;padding:18px;'>No hay pedidos realizados.</td></tr>`;
+                    return;
+                }
+                tablaPedidos.innerHTML = pedidos.map((p, idx) => `
+                    <tr>
+                        <td>#${idx + 1}</td>
+                        <td>${p.cliente || '-'}</td>
+                        <td>${p.platos.map(pl=>`${pl.nombre} <span style='color:#ff5722;'>x${pl.cantidad}</span>`).join(', ')}</td>
+                        <td>${p.total}</td>
+                        <td><span class="status ${p.estado === 'Pendiente' ? 'pending' : (p.estado === 'Aceptado' ? 'in-progress' : (p.estado === 'Entregado' ? 'ready' : 'rechazado'))}">${p.estado || 'Pendiente'}</span></td>
+                        <td>
+                            ${p.estado === 'Pendiente' ? `
+                                <button class="btn-small aceptar-pedido" data-idx="${idx}">Aceptar</button>
+                                <button class="btn-small rechazar-pedido" data-idx="${idx}">Rechazar</button>
+                            ` : p.estado === 'Aceptado' ? `
+                                <button class="btn-small entregar-pedido" data-idx="${idx}">Pedido Entregado</button>
+                            ` : '<span style="color:#888;">Sin acciones</span>'}
+                        </td>
+                    </tr>
+                `).join('');
+                // Acciones aceptar/rechazar/entregar
+                tablaPedidos.querySelectorAll('.aceptar-pedido').forEach(btn => {
+                    btn.onclick = function() {
+                        const idx = parseInt(btn.getAttribute('data-idx'));
+                        pedidos[idx].estado = 'Aceptado';
+                        localStorage.setItem('pedidos', JSON.stringify(pedidos));
+                        renderPedidos();
+                    };
+                });
+                tablaPedidos.querySelectorAll('.rechazar-pedido').forEach(btn => {
+                    btn.onclick = function() {
+                        const idx = parseInt(btn.getAttribute('data-idx'));
+                        pedidos[idx].estado = 'Rechazado';
+                        localStorage.setItem('pedidos', JSON.stringify(pedidos));
+                        renderPedidos();
+                    };
+                });
+                tablaPedidos.querySelectorAll('.entregar-pedido').forEach(btn => {
+                    btn.onclick = function() {
+                        const idx = parseInt(btn.getAttribute('data-idx'));
+                        pedidos[idx].estado = 'Entregado';
+                        localStorage.setItem('pedidos', JSON.stringify(pedidos));
+                        renderPedidos();
+                    };
+                });
+            }
+            renderPedidos();
+            calcularValoracionRestaurante();
+            // Actualizar valoración cada vez que cambian las calificaciones
+            window.addEventListener('storage', function(e) {
+                if (e.key && e.key.startsWith('calificacionesPlatos_')) {
+                    calcularValoracionRestaurante();
+                }
+            });
+        });
+
+        // --- ACCIONES RÁPIDAS ---
+        document.addEventListener('DOMContentLoaded', function() {
+            // Añadir Plato
+            document.querySelectorAll('.action-buttons .fa-plus-circle').forEach(btn => {
+                btn.closest('button').onclick = function(e) {
+                    e.preventDefault();
+                    // Simula click en menú "Nuevo Plato"
+                    const menuNuevoPlato = document.querySelector('.menu .fa-plus-circle')?.closest('a');
+                    if (menuNuevoPlato) menuNuevoPlato.click();
+                };
+            });
+            // Configurar Precios
+            document.querySelectorAll('.action-buttons .fa-cog').forEach(btn => {
+                btn.closest('button').onclick = function(e) {
+                    e.preventDefault();
+                    // Simula click en menú "Configuración"
+                    const menuConfig = document.querySelector('.menu .fa-cog')?.closest('a');
+                    if (menuConfig) menuConfig.click();
+                };
+            });
+            // Ver Mapa
+            document.querySelectorAll('.action-buttons .fa-map-marker-alt').forEach(btn => {
+                btn.closest('button').onclick = function(e) {
+                    e.preventDefault();
+                    // Mostrar modal de GPS estilo cliente (sin botón de enviar ubicación)
+                    let modal = document.getElementById('gps-modal-rest');
+                    if (!modal) {
+                        modal = document.createElement('div');
+                        modal.id = 'gps-modal-rest';
+                        modal.style.position = 'fixed';
+                        modal.style.top = '0';
+                        modal.style.left = '0';
+                        modal.style.width = '100vw';
+                        modal.style.height = '100vh';
+                        modal.style.background = 'rgba(0,0,0,0.4)';
+                        modal.style.display = 'flex';
+                        modal.style.alignItems = 'center';
+                        modal.style.justifyContent = 'center';
+                        modal.style.zIndex = 10000;
+                        document.body.appendChild(modal);
+                    }
+                    let lat = null, lon = null;
+                    modal.innerHTML = `
+                        <div style="background:#fff;padding:32px 24px;border-radius:12px;min-width:320px;max-width:95vw;max-height:90vh;overflow:auto;position:relative;">
+                            <h2 style="margin-bottom:18px;">Tu Ubicación Actual</h2>
+                            <button id="close-gps-modal-rest" style="position:absolute;top:12px;right:12px;font-size:20px;background:none;border:none;cursor:pointer;">&times;</button>
+                            <div id="gps-map-rest" style="width:350px;height:350px;border-radius:10px;overflow:hidden;background:#eee;display:flex;align-items:center;justify-content:center;">Cargando mapa...</div>
+                            <div id="gps-error-rest" style="color:red;margin-top:10px;"></div>
+                        </div>
+                    `;
+                    modal.querySelector('#close-gps-modal-rest').onclick = () => modal.remove();
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(function(pos) {
+                            lat = pos.coords.latitude;
+                            lon = pos.coords.longitude;
+                            const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${lon-0.01}%2C${lat-0.01}%2C${lon+0.01}%2C${lat+0.01}&layer=mapnik&marker=${lat}%2C${lon}`;
+                            modal.querySelector('#gps-map-rest').innerHTML = `<iframe src='${mapUrl}' width='100%' height='350' style='border:0;border-radius:10px;' loading='lazy'></iframe>`;
+                        }, function(err) {
+                            modal.querySelector('#gps-error-rest').textContent = 'No se pudo obtener tu ubicación.';
+                            modal.querySelector('#gps-map-rest').textContent = '';
+                        });
+                    } else {
+                        modal.querySelector('#gps-error-rest').textContent = 'Tu navegador no soporta geolocalización.';
+                        modal.querySelector('#gps-map-rest').textContent = '';
+                    }
+                };
+            });
+            // Unificar acción del botón de menú GPS
+            const menuGPS = document.querySelector('.menu .fa-map-marker-alt')?.closest('a');
+            if (menuGPS) {
+                menuGPS.onclick = function(e) {
+                    e.preventDefault();
+                    // Mostrar modal de GPS estilo cliente (sin botón de enviar ubicación)
+                    let modal = document.getElementById('gps-modal-rest');
+                    if (!modal) {
+                        modal = document.createElement('div');
+                        modal.id = 'gps-modal-rest';
+                        modal.style.position = 'fixed';
+                        modal.style.top = '0';
+                        modal.style.left = '0';
+                        modal.style.width = '100vw';
+                        modal.style.height = '100vh';
+                        modal.style.background = 'rgba(0,0,0,0.4)';
+                        modal.style.display = 'flex';
+                        modal.style.alignItems = 'center';
+                        modal.style.justifyContent = 'center';
+                        modal.style.zIndex = 10000;
+                        document.body.appendChild(modal);
+                    }
+                    let lat = null, lon = null;
+                    modal.innerHTML = `
+                        <div style="background:#fff;padding:32px 24px;border-radius:12px;min-width:320px;max-width:95vw;max-height:90vh;overflow:auto;position:relative;">
+                            <h2 style="margin-bottom:18px;">Tu Ubicación Actual</h2>
+                            <button id="close-gps-modal-rest" style="position:absolute;top:12px;right:12px;font-size:20px;background:none;border:none;cursor:pointer;">&times;</button>
+                            <div id="gps-map-rest" style="width:350px;height:350px;border-radius:10px;overflow:hidden;background:#eee;display:flex;align-items:center;justify-content:center;">Cargando mapa...</div>
+                            <div id="gps-error-rest" style="color:red;margin-top:10px;"></div>
+                        </div>
+                    `;
+                    modal.querySelector('#close-gps-modal-rest').onclick = () => modal.remove();
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(function(pos) {
+                            lat = pos.coords.latitude;
+                            lon = pos.coords.longitude;
+                            const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${lon-0.01}%2C${lat-0.01}%2C${lon+0.01}%2C${lat+0.01}&layer=mapnik&marker=${lat}%2C${lon}`;
+                            modal.querySelector('#gps-map-rest').innerHTML = `<iframe src='${mapUrl}' width='100%' height='350' style='border:0;border-radius:10px;' loading='lazy'></iframe>`;
+                        }, function(err) {
+                            modal.querySelector('#gps-error-rest').textContent = 'No se pudo obtener tu ubicación.';
+                            modal.querySelector('#gps-map-rest').textContent = '';
+                        });
+                    } else {
+                        modal.querySelector('#gps-error-rest').textContent = 'Tu navegador no soporta geolocalización.';
+                        modal.querySelector('#gps-map-rest').textContent = '';
+                    }
+                };
+            }
+            // Configuración avanzada restaurante
+            if (menuConfig) {
+                menuConfig.onclick = function(e) {
+                    e.preventDefault();
+                    let modal = document.getElementById('config-modal-rest');
+                    if (!modal) {
+                        modal = document.createElement('div');
+                        modal.id = 'config-modal-rest';
+                        modal.style.position = 'fixed';
+                        modal.style.top = '0';
+                        modal.style.left = '0';
+                        modal.style.width = '100vw';
+                        modal.style.height = '100vh';
+                        modal.style.background = 'rgba(0,0,0,0.4)';
+                        modal.style.display = 'flex';
+                        modal.style.alignItems = 'center';
+                        modal.style.justifyContent = 'center';
+                        modal.style.zIndex = 10000;
+                        document.body.appendChild(modal);
+                    }
+                    // Obtener datos restaurante
+                    let restaurantes = JSON.parse(localStorage.getItem('restaurantes')) || [];
+                    let rest = restaurantes[0] || {nombre:'Restaurante', email:'', password:'', img:''};
+                    let platos = JSON.parse(localStorage.getItem('platos')) || [];
+                    modal.innerHTML = `
+                        <div style="background:#fff;padding:36px 28px 28px 28px;border-radius:22px;min-width:350px;max-width:98vw;max-height:92vh;overflow:auto;position:relative;box-shadow:0 10px 40px rgba(34,87,255,0.13);font-family:'Segoe UI',Arial,sans-serif;">
+                            <button id="close-config-modal-rest" style="position:absolute;top:18px;right:18px;font-size:26px;background:none;border:none;cursor:pointer;color:#ff5722;transition:color 0.2s;">&times;</button>
+                            <h2 style="margin-bottom:24px;text-align:center;font-size:2em;color:#ff5722;letter-spacing:1px;">Configuración Restaurante</h2>
+                            <form id="form-rest-perfil" style="margin-bottom:24px;">
+                                <div style='display:flex;flex-direction:column;align-items:center;margin-bottom:18px;'>
+                                    <label for='rest-img-input' style='cursor:pointer;'>
+                                        <img id='rest-img-preview' src='${rest.img || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(rest.nombre || 'R') + '&background=ff5722&color=fff&size=128'}' style='width:90px;height:90px;border-radius:50%;object-fit:cover;border:2px solid #ff5722;'>
+                                    </label>
+                                    <input type='file' id='rest-img-input' accept='image/*' style='display:none;'>
+                                    <small>Cambiar imagen</small>
+                                </div>
+                                <div style='margin-bottom:12px;'>
+                                    <label>Nombre del restaurante:</label><br>
+                                    <input type='text' id='rest-nombre' value='${rest.nombre || ''}' style='width:100%;padding:8px;border-radius:5px;border:1px solid #ccc;'>
+                                </div>
+                                <div style='margin-bottom:12px;'>
+                                    <label>Nueva contraseña:</label><br>
+                                    <input type='password' id='rest-pass' placeholder='Nueva contraseña' style='width:100%;padding:8px;border-radius:5px;border:1px solid #ccc;'>
+                                </div>
+                                <div style='margin-bottom:12px;'>
+                                    <label>Confirmar contraseña:</label><br>
+                                    <input type='password' id='rest-pass2' placeholder='Confirmar contraseña' style='width:100%;padding:8px;border-radius:5px;border:1px solid #ccc;'>
+                                </div>
+                                <div id='rest-error' style='color:red;margin-bottom:10px;'></div>
+                                <button type='submit' style='background:#ff5722;color:#fff;border:none;padding:10px 24px;border-radius:6px;font-size:16px;cursor:pointer;'>Guardar Cambios</button>
+                            </form>
+                            <div style='margin-bottom:24px;'>
+                                <h3 style='color:#388e3c;margin-bottom:10px;'>Editar Platos</h3>
+                                <table style='width:100%;border-collapse:collapse;'>
+                                    <thead><tr style='background:#f7f7f7;'><th>Nombre</th><th>Precio</th><th>Acciones</th></tr></thead>
+                                    <tbody>
+                                        ${platos.length === 0 ? `<tr><td colspan='3' style='color:#888;text-align:center;'>No hay platos.</td></tr>` : platos.map((p, idx) => `
+                                            <tr data-idx='${idx}'>
+                                                <td><input type='text' value='${p.nombre}' class='edit-nombre' style='width:100%;padding:4px 6px;border-radius:5px;border:1px solid #ccc;'></td>
+                                                <td><input type='text' value='${p.precio}' class='edit-precio' style='width:80px;padding:4px 6px;border-radius:5px;border:1px solid #ccc;'></td>
+                                                <td><button class='btn-small eliminar-plato' style='background:#e53935;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;'>Eliminar</button></td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                                <button id='guardar-platos' style='margin-top:12px;background:#388e3c;color:#fff;border:none;padding:8px 18px;border-radius:8px;font-weight:500;transition:background 0.2s;'>Guardar Cambios de Platos</button>
+                            </div>
+                            <div style='margin-bottom:18px;'>
+                                <button id='eliminar-rest-cuenta' style='background:#e53935;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:1em;float:right;'>Eliminar Cuenta Restaurante</button>
+                            </div>
+                        </div>
+                    `;
+                    modal.querySelector('#close-config-modal-rest').onclick = () => modal.remove();
+                    // Imagen preview
+                    const imgInput = modal.querySelector('#rest-img-input');
+                    const imgPreview = modal.querySelector('#rest-img-preview');
+                    imgInput.onchange = function(e) {
+                        const file = imgInput.files[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = function(ev) {
+                                imgPreview.src = ev.target.result;
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    };
+                    imgPreview.onclick = () => imgInput.click();
+                    // Guardar perfil restaurante
+                    modal.querySelector('#form-rest-perfil').onsubmit = function(ev) {
+                        ev.preventDefault();
+                        const nombre = modal.querySelector('#rest-nombre').value.trim();
+                        const pass = modal.querySelector('#rest-pass').value;
+                        const pass2 = modal.querySelector('#rest-pass2').value;
+                        const errorDiv = modal.querySelector('#rest-error');
+                        if (pass && pass !== pass2) {
+                            errorDiv.textContent = 'Las contraseñas no coinciden.';
+                            return;
+                        }
+                        rest.nombre = nombre;
+                        if (imgPreview.src.startsWith('data:image')) {
+                            rest.img = imgPreview.src;
+                        }
+                        if (pass) {
+                            rest.password = pass;
+                        }
+                        restaurantes[0] = rest;
+                        localStorage.setItem('restaurantes', JSON.stringify(restaurantes));
+                        // Actualiza nombre e imagen en dashboard
+                        const userSpan = document.querySelector('.user-info span');
+                        if (userSpan) userSpan.textContent = nombre;
+                        const userImg = document.querySelector('.user-info img');
+                        if (userImg && rest.img) {
+                            userImg.src = rest.img;
+                        }
+                        modal.remove();
+                        alert('Perfil actualizado correctamente.');
+                    };
+                    // Guardar cambios de platos
+                    modal.querySelector('#guardar-platos').onclick = function() {
+                        const filas = modal.querySelectorAll('tbody tr');
+                        filas.forEach(fila => {
+                            const idx = fila.dataset.idx;
+                            platos[idx].nombre = fila.querySelector('.edit-nombre').value.trim();
+                            platos[idx].precio = fila.querySelector('.edit-precio').value.trim();
+                        });
+                        localStorage.setItem('platos', JSON.stringify(platos));
+                        alert('Cambios de platos guardados.');
+                    };
+                    // Eliminar plato
+                    modal.querySelectorAll('.eliminar-plato').forEach(btn => {
+                        btn.onclick = function() {
+                            const idx = this.closest('tr').dataset.idx;
+                            if (confirm('¿Seguro que deseas eliminar este plato?')) {
+                                platos.splice(idx, 1);
+                                localStorage.setItem('platos', JSON.stringify(platos));
+                                modal.remove();
+                                menuConfig.click();
+                            }
+                        };
+                    });
+                    // Eliminar cuenta restaurante
+                    modal.querySelector('#eliminar-rest-cuenta').onclick = function() {
+                        if (confirm('¿Seguro que deseas eliminar tu cuenta de restaurante? Esta acción no se puede deshacer.')) {
+                            restaurantes.splice(0, 1);
+                            localStorage.setItem('restaurantes', JSON.stringify(restaurantes));
+                            localStorage.removeItem('rol');
+                            localStorage.removeItem('userRole');
+                            window.location.href = '../login_page.html';
+                        }
+                    };
+                };
+            }
+        });
+
+        // --- MENÚ PLATOS: Mostrar platos creados ---
+        const menuPlatos = document.querySelector('.menu .fa-hamburger')?.closest('a');
+        if (menuPlatos) {
+            menuPlatos.onclick = function(e) {
+                e.preventDefault();
+                let modal = document.getElementById('platos-modal-rest');
+                if (!modal) {
+                    modal = document.createElement('div');
+                    modal.id = 'platos-modal-rest';
+                    modal.style.position = 'fixed';
+                    modal.style.top = '0';
+                    modal.style.left = '0';
+                    modal.style.width = '100vw';
+                    modal.style.height = '100vh';
+                    modal.style.background = 'rgba(0,0,0,0.4)';
+                    modal.style.display = 'flex';
+                    modal.style.alignItems = 'center';
+                    modal.style.justifyContent = 'center';
+                    modal.style.zIndex = 10000;
+                    document.body.appendChild(modal);
+                }
+                let platos = JSON.parse(localStorage.getItem('platos')) || [];
+                modal.innerHTML = `
+                    <div style=\"background:#fff;padding:32px 24px 24px 24px;border-radius:16px;min-width:340px;max-width:98vw;max-height:92vh;overflow:auto;position:relative;box-shadow:0 8px 32px rgba(0,0,0,0.18);\">
+                        <h2 style='margin-bottom:18px;text-align:center;'>Platos Creados</h2>
+                        <button id='close-platos-modal-rest' style='position:absolute;top:12px;right:12px;font-size:22px;background:none;border:none;cursor:pointer;'>&times;</button>
+                        <table style='width:100%;border-collapse:collapse;'>
+                            <thead>
+                                <tr style='background:#fff7f0;'>
+                                    <th style='padding:10px 8px;text-align:left;'>Nombre</th>
+                                    <th style='padding:10px 8px;text-align:left;'>Precio</th>
+                                    <th style='padding:10px 8px;text-align:left;'>Imagen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${platos.length === 0 ? `<tr><td colspan='3' style='color:#888;text-align:center;padding:18px;'>No hay platos creados.</td></tr>` : platos.map(p => `
+                                    <tr>
+                                        <td style='padding:8px 8px;'>${p.nombre}</td>
+                                        <td style='padding:8px 8px;'>${p.precio}</td>
+                                        <td style='padding:8px 8px;'>${p.img ? `<img src='${p.img}' alt='' style='width:48px;height:48px;object-fit:cover;border-radius:6px;'>` : '<span style=\'color:#bbb;\'>Sin imagen</span>'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                modal.querySelector('#close-platos-modal-rest').onclick = () => modal.remove();
+                modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+            };
+        }
+        // --- MENÚ CONFIGURACIÓN: Modal de configuración restaurante ---
+        const menuConfig = document.querySelector('.menu .fa-cog')?.closest('a');
+        if (menuConfig) {
+            menuConfig.onclick = function(e) {
+                e.preventDefault();
+                let modal = document.getElementById('config-modal-rest');
+                if (!modal) {
+                    modal = document.createElement('div');
+                    modal.id = 'config-modal-rest';
+                    modal.style.position = 'fixed';
+                    modal.style.top = '0';
+                    modal.style.left = '0';
+                    modal.style.width = '100vw';
+                    modal.style.height = '100vh';
+                    modal.style.background = 'rgba(0,0,0,0.4)';
+                    modal.style.display = 'flex';
+                    modal.style.alignItems = 'center';
+                    modal.style.justifyContent = 'center';
+                    modal.style.zIndex = 10000;
+                    document.body.appendChild(modal);
+                }
+                let restaurantes = JSON.parse(localStorage.getItem('restaurantes')) || [];
+                let rest = restaurantes[0] || {nombre:'Restaurante', email:'', password:'', img:''};
+                let platos = JSON.parse(localStorage.getItem('platos')) || [];
+                modal.innerHTML = `
+                    <div style=\"background:#fff;padding:36px 28px 28px 28px;border-radius:22px;min-width:350px;max-width:98vw;max-height:92vh;overflow:auto;position:relative;box-shadow:0 10px 40px rgba(34,87,255,0.13);font-family:'Segoe UI',Arial,sans-serif;\">
+                        <button id='close-config-modal-rest' style='position:absolute;top:18px;right:18px;font-size:26px;background:none;border:none;cursor:pointer;color:#ff5722;transition:color 0.2s;'>&times;</button>
+                        <h2 style='margin-bottom:24px;text-align:center;font-size:2em;color:#ff5722;letter-spacing:1px;'>Configuración Restaurante</h2>
+                        <form id='form-rest-perfil' style='margin-bottom:24px;'>
+                            <div style='display:flex;flex-direction:column;align-items:center;margin-bottom:18px;'>
+                                <label for='rest-img-input' style='cursor:pointer;'>
+                                    <img id='rest-img-preview' src='${rest.img || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(rest.nombre || 'R') + '&background=ff5722&color=fff&size=128'}' style='width:90px;height:90px;border-radius:50%;object-fit:cover;border:2px solid #ff5722;'>
+                                </label>
+                                <input type='file' id='rest-img-input' accept='image/*' style='display:none;'>
+                                <small>Cambiar imagen</small>
+                            </div>
+                            <div style='margin-bottom:12px;'>
+                                <label>Nombre del restaurante:</label><br>
+                                <input type='text' id='rest-nombre' value='${rest.nombre || ''}' style='width:100%;padding:8px;border-radius:5px;border:1px solid #ccc;'>
+                            </div>
+                            <div style='margin-bottom:12px;'>
+                                <label>Nueva contraseña:</label><br>
+                                <input type='password' id='rest-pass' placeholder='Nueva contraseña' style='width:100%;padding:8px;border-radius:5px;border:1px solid #ccc;'>
+                            </div>
+                            <div style='margin-bottom:12px;'>
+                                <label>Confirmar contraseña:</label><br>
+                                <input type='password' id='rest-pass2' placeholder='Confirmar contraseña' style='width:100%;padding:8px;border-radius:5px;border:1px solid #ccc;'>
+                            </div>
+                            <div id='rest-error' style='color:red;margin-bottom:10px;'></div>
+                            <button type='submit' style='background:#ff5722;color:#fff;border:none;padding:10px 24px;border-radius:6px;font-size:16px;cursor:pointer;'>Guardar Cambios</button>
+                        </form>
+                        <div style='margin-bottom:24px;'>
+                            <h3 style='color:#388e3c;margin-bottom:10px;'>Editar Platos</h3>
+                            <table style='width:100%;border-collapse:collapse;'>
+                                <thead><tr style='background:#f7f7f7;'><th>Nombre</th><th>Precio</th><th>Acciones</th></tr></thead>
+                                <tbody>
+                                    ${platos.length === 0 ? `<tr><td colspan='3' style='color:#888;text-align:center;'>No hay platos.</td></tr>` : platos.map((p, idx) => `
+                                        <tr data-idx='${idx}'>
+                                            <td><input type='text' value='${p.nombre}' class='edit-nombre' style='width:100%;padding:4px 6px;border-radius:5px;border:1px solid #ccc;'></td>
+                                            <td><input type='text' value='${p.precio}' class='edit-precio' style='width:80px;padding:4px 6px;border-radius:5px;border:1px solid #ccc;'></td>
+                                            <td><button class='btn-small eliminar-plato' style='background:#e53935;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;'>Eliminar</button></td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                            <button id='guardar-platos' style='margin-top:12px;background:#388e3c;color:#fff;border:none;padding:8px 18px;border-radius:8px;font-weight:500;transition:background 0.2s;'>Guardar Cambios de Platos</button>
+                        </div>
+                        <div style='margin-bottom:18px;'>
+                            <button id='eliminar-rest-cuenta' style='background:#e53935;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:1em;float:right;'>Eliminar Cuenta Restaurante</button>
+                        </div>
+                    </div>
+                `;
+                modal.querySelector('#close-config-modal-rest').onclick = () => modal.remove();
+                // Imagen preview
+                const imgInput = modal.querySelector('#rest-img-input');
+                const imgPreview = modal.querySelector('#rest-img-preview');
+                imgInput.onchange = function(e) {
+                    const file = imgInput.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(ev) {
+                            imgPreview.src = ev.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+                imgPreview.onclick = () => imgInput.click();
+                // Guardar perfil restaurante
+                modal.querySelector('#form-rest-perfil').onsubmit = function(ev) {
+                    ev.preventDefault();
+                    const nombre = modal.querySelector('#rest-nombre').value.trim();
+                    const pass = modal.querySelector('#rest-pass').value;
+                    const pass2 = modal.querySelector('#rest-pass2').value;
+                    const errorDiv = modal.querySelector('#rest-error');
+                    if (pass && pass !== pass2) {
+                        errorDiv.textContent = 'Las contraseñas no coinciden.';
+                        return;
+                    }
+                    rest.nombre = nombre;
+                    if (imgPreview.src.startsWith('data:image')) {
+                        rest.img = imgPreview.src;
+                    }
+                    if (pass) {
+                        rest.password = pass;
+                    }
+                    restaurantes[0] = rest;
+                    localStorage.setItem('restaurantes', JSON.stringify(restaurantes));
+                    // Actualiza nombre e imagen en dashboard
+                    const userSpan = document.querySelector('.user-info span');
+                    if (userSpan) userSpan.textContent = nombre;
+                    const userImg = document.querySelector('.user-info img');
+                    if (userImg && rest.img) {
+                        userImg.src = rest.img;
+                    }
+                    modal.remove();
+                    alert('Perfil actualizado correctamente.');
+                };
+                // Guardar cambios de platos
+                modal.querySelector('#guardar-platos').onclick = function() {
+                    const filas = modal.querySelectorAll('tbody tr');
+                    filas.forEach(fila => {
+                        const idx = fila.dataset.idx;
+                        platos[idx].nombre = fila.querySelector('.edit-nombre').value.trim();
+                        platos[idx].precio = fila.querySelector('.edit-precio').value.trim();
+                    });
+                    localStorage.setItem('platos', JSON.stringify(platos));
+                    alert('Cambios de platos guardados.');
+                };
+                // Eliminar plato
+                modal.querySelectorAll('.eliminar-plato').forEach(btn => {
+                    btn.onclick = function() {
+                        const idx = this.closest('tr').dataset.idx;
+                        if (confirm('¿Seguro que deseas eliminar este plato?')) {
+                            platos.splice(idx, 1);
+                            localStorage.setItem('platos', JSON.stringify(platos));
+                            modal.remove();
+                            menuConfig.click();
+                        }
+                    };
+                });
+                // Eliminar cuenta restaurante
+                modal.querySelector('#eliminar-rest-cuenta').onclick = function() {
+                    if (confirm('¿Seguro que deseas eliminar tu cuenta de restaurante? Esta acción no se puede deshacer.')) {
+                        restaurantes.splice(0, 1);
+                        localStorage.setItem('restaurantes', JSON.stringify(restaurantes));
+                        localStorage.removeItem('rol');
+                        localStorage.removeItem('userRole');
+                        window.location.href = '../login_page.html';
+                    }
+                };
+            };
+        }
+    </script>
+</body>
+</html>
