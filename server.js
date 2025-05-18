@@ -32,6 +32,22 @@ db.serialize(() => {
     precio REAL,
     oculto INTEGER DEFAULT 0
   )`);
+  // Nueva tabla restaurantes
+  db.run(`CREATE TABLE IF NOT EXISTS restaurantes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT,
+    direccion TEXT,
+    calificacion REAL,
+    fecha_registro TEXT
+  )`);
+  // Nueva tabla pedidos
+  db.run(`CREATE TABLE IF NOT EXISTS pedidos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    usuario_id INTEGER,
+    restaurante_id INTEGER,
+    fecha TEXT,
+    total REAL
+  )`);
 });
 
 // Configura aquí tus credenciales de correo (reemplaza por variables de entorno en producción)
@@ -123,6 +139,44 @@ app.delete('/api/platos/:id', (req, res) => {
   db.run('DELETE FROM platos WHERE id = ?', [req.params.id], function(err) {
     if (err || this.changes === 0) return res.status(400).json({ error: 'No se pudo eliminar' });
     res.json({ mensaje: 'Plato eliminado' });
+  });
+});
+
+// ENDPOINTS PARA DASHBOARD ADMIN
+// Usuarios activos (cuenta usuarios con rol 'cliente')
+app.get('/api/usuarios/activos', (req, res) => {
+  db.get('SELECT COUNT(*) as total FROM usuarios WHERE rol = "cliente"', (err, row) => {
+    if (err) return res.status(500).json({ error: 'Error al obtener usuarios activos' });
+    res.json({ total: row.total });
+  });
+});
+// Platos disponibles (no ocultos)
+app.get('/api/platos/disponibles', (req, res) => {
+  db.get('SELECT COUNT(*) as total FROM platos WHERE oculto = 0', (err, row) => {
+    if (err) return res.status(500).json({ error: 'Error al obtener platos' });
+    res.json({ total: row.total });
+  });
+});
+// Pedidos de hoy
+app.get('/api/pedidos/hoy', (req, res) => {
+  const hoy = new Date().toISOString().slice(0, 10);
+  db.get('SELECT COUNT(*) as total FROM pedidos WHERE fecha = ?', [hoy], (err, row) => {
+    if (err) return res.status(500).json({ error: 'Error al obtener pedidos' });
+    res.json({ total: row.total });
+  });
+});
+// Últimos usuarios registrados (5 más recientes)
+app.get('/api/usuarios/ultimos', (req, res) => {
+  db.all('SELECT nombre, email, rowid as id FROM usuarios ORDER BY id DESC LIMIT 5', (err, rows) => {
+    if (err) return res.status(500).json({ error: 'Error al obtener usuarios' });
+    res.json(rows);
+  });
+});
+// Restaurantes recientes (5 más recientes)
+app.get('/api/restaurantes/recientes', (req, res) => {
+  db.all('SELECT nombre, calificacion, rowid as id FROM restaurantes ORDER BY id DESC LIMIT 5', (err, rows) => {
+    if (err) return res.status(500).json({ error: 'Error al obtener restaurantes' });
+    res.json(rows);
   });
 });
 
