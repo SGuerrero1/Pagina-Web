@@ -201,3 +201,25 @@ searchInput.addEventListener('input', () => {
   }
 });
 
+// --- FILTRAR PLATOS VISIBLES PARA CLIENTES Y RESTAURANTES ---
+// Sobrescribe localStorage.getItem para ocultar platos con 'oculto' en cliente y restaurante
+(function() {
+  const originalGetItem = localStorage.getItem;
+  localStorage.getItem = function(key) {
+    if (key === 'platos') {
+      const raw = originalGetItem.call(this, key);
+      try {
+        const platos = JSON.parse(raw) || [];
+        // Si estamos en dashboard_cliente.html o dashboard_restaurante.html, filtrar ocultos
+        if (window.location.pathname.includes('dashboard_cliente.html') || window.location.pathname.includes('dashboard_restaurante.html')) {
+          return JSON.stringify(platos.filter(p => !p.oculto));
+        }
+        return raw;
+      } catch {
+        return raw;
+      }
+    }
+    return originalGetItem.call(this, key);
+  };
+})();
+

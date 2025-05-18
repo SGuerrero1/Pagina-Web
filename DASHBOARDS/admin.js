@@ -14,10 +14,10 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   actualizarContadorUsuarios();
 
-  // Mostrar cantidad de platos en la tarjeta
+  // Mostrar cantidad de platos en la tarjeta (solo los no ocultos)
   const platosCantidadSpan = document.getElementById('platos-disponibles');
   if (platosCantidadSpan) {
-    const platos = JSON.parse(localStorage.getItem('platos')) || [];
+    const platos = (JSON.parse(localStorage.getItem('platos')) || []).filter(p => !p.oculto);
     platosCantidadSpan.textContent = platos.length;
   }
 
@@ -256,10 +256,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let restaurantes = JSON.parse(localStorage.getItem('restaurantes')) || [];
     let usuarios = [];
     usuarios = usuarios.concat(
-      [{ nombre: 'Admin', email: 'admin', rol: 'admin' }],
-      admins.map(a => ({ nombre: a.nombre, email: a.email, rol: 'admin' })),
-      clientes.map(c => ({ nombre: c.nombre, email: c.email, rol: 'cliente' })),
-      restaurantes.map(r => ({ nombre: r.nombre, email: r.email, rol: 'restaurante' }))
+      [{ nombre: 'Admin', email: 'admin', rol: 'admin', password: 'admin' }],
+      admins.map(a => ({ nombre: a.nombre, email: a.email, rol: 'admin', password: a.password })),
+      clientes.map(c => ({ nombre: c.nombre, email: c.email, rol: 'cliente', password: c.password })),
+      restaurantes.map(r => ({ nombre: r.nombre, email: r.email, rol: 'restaurante', password: r.password }))
     );
     // Obtener ubicaciones de cada cliente
     let ubicaciones = [];
@@ -279,20 +279,26 @@ document.addEventListener('DOMContentLoaded', function() {
               <th style="padding:10px 8px;text-align:left;">Nombre</th>
               <th style="padding:10px 8px;text-align:left;">Correo</th>
               <th style="padding:10px 8px;text-align:left;">Rol</th>
+              <th style="padding:10px 8px;text-align:left;">Contraseña</th>
               <th style="padding:10px 8px;text-align:left;">Acciones</th>
             </tr>
           </thead>
           <tbody>
             ${usuarios.map((u, idx) => {
               const ubic = ubicaciones.find(ub=>ub.email===u.email);
-              return `<tr data-idx=\"${idx}\">
-                <td style=\"padding:8px 8px;\">${u.nombre}</td>
-                <td style=\"padding:8px 8px;\">${u.email}</td>
-                <td style=\"padding:8px 8px;\">${u.rol}</td>
-                <td style=\"padding:8px 8px;\">
-                  ${u.rol === 'cliente' ? `<button class=\"editar-cliente\" style=\"margin-right:6px;background:#ff9800;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;\">Editar</button>
-                  <button class=\"eliminar-cliente\" style=\"margin-right:6px;background:#e53935;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;\">Eliminar</button>
-                  ${ubic ? `<button class=\"ver-ubicacion\" style=\"background:#388e3c;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;\">Ver Ubicación</button>` : ''}` : ''}
+              return `<tr data-idx="${idx}">
+                <td style="padding:8px 8px;">${u.nombre}</td>
+                <td style="padding:8px 8px;">${u.email}</td>
+                <td style="padding:8px 8px;">${u.rol}</td>
+                <td style="padding:8px 8px;">
+                  <input type='password' value='${u.password || ''}' class='input-password' style='width:110px;padding:3px 6px;border-radius:5px;border:1px solid #ccc;' readonly>
+                  <button class='ver-pass' style='margin-left:4px;background:#607d8b;color:#fff;border:none;padding:2px 8px;border-radius:5px;cursor:pointer;font-size:0.98em;'>👁️</button>
+                  <button class='editar-pass' style='margin-left:4px;background:#ff9800;color:#fff;border:none;padding:2px 8px;border-radius:5px;cursor:pointer;font-size:0.98em;'>Editar</button>
+                </td>
+                <td style="padding:8px 8px;">
+                  ${u.rol === 'cliente' ? `<button class="editar-cliente" style="margin-right:6px;background:#ff9800;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;">Editar</button>
+                  <button class="eliminar-cliente" style="margin-right:6px;background:#e53935;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;">Eliminar</button>
+                  ${ubic ? `<button class="ver-ubicacion" style="background:#388e3c;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;">Ver Ubicación</button>` : ''}` : ''}
                 </td>
               </tr>`;
             }).join('')}
@@ -303,105 +309,173 @@ document.addEventListener('DOMContentLoaded', function() {
     modal.querySelector('#close-estadisticas-modal').onclick = () => modal.remove();
     modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
 
-    // Acciones de los botones SOLO para clientes
+    // Acciones de los botones
     modal.querySelectorAll('.editar-cliente').forEach(btn => {
-      btn.onclick = function() {
-        const idx = this.closest('tr').dataset.idx;
-        editarCliente(idx);
+      btn.onclick = function(e) {
+        e.stopPropagation();
+        const idx = parseInt(this.closest('tr').dataset.idx);
+        let admins = JSON.parse(localStorage.getItem('admins')) || [];
+        let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
+        let restaurantes = JSON.parse(localStorage.getItem('restaurantes')) || [];
+        // Admin fijo no editable
+        if (idx === 0) return alert('No se puede editar el Admin fijo.');
+        if (idx > 0 && idx <= admins.length) {
+          // Editar admin
+          const a = admins[idx-1];
+          const nuevoNombre = prompt('Editar nombre del admin:', a.nombre);
+          if (nuevoNombre !== null && nuevoNombre.trim() !== '') a.nombre = nuevoNombre.trim();
+          const nuevoEmail = prompt('Editar correo del admin:', a.email);
+          if (nuevoEmail !== null && nuevoEmail.trim() !== '') a.email = nuevoEmail.trim();
+          localStorage.setItem('admins', JSON.stringify(admins));
+          mostrarModalEstadisticas();
+          return;
+        }
+        if (idx > admins.length && idx <= admins.length + clientes.length) {
+          // Editar cliente
+          const realIdx = idx - 1 - admins.length;
+          const c = clientes[realIdx];
+          if (!c) return;
+          const nuevoNombre = prompt('Editar nombre del cliente:', c.nombre);
+          if (nuevoNombre !== null && nuevoNombre.trim() !== '') c.nombre = nuevoNombre.trim();
+          const nuevoEmail = prompt('Editar correo del cliente:', c.email);
+          if (nuevoEmail !== null && nuevoEmail.trim() !== '') {
+            // Si cambia el email, también cambiar la key de ubicación si existe
+            const oldEmail = c.email;
+            c.email = nuevoEmail.trim();
+            const ubicKey = 'ubicacionCliente_' + oldEmail;
+            if (localStorage.getItem(ubicKey)) {
+              localStorage.setItem('ubicacionCliente_' + c.email, localStorage.getItem(ubicKey));
+              localStorage.removeItem(ubicKey);
+            }
+          }
+          clientes[realIdx] = c;
+          localStorage.setItem('clientes', JSON.stringify(clientes));
+          mostrarModalEstadisticas();
+          return;
+        }
+        // Editar restaurante
+        const restIdx = idx - 1 - admins.length - clientes.length;
+        if (restIdx >= 0 && restIdx < restaurantes.length) {
+          const r = restaurantes[restIdx];
+          const nuevoNombre = prompt('Editar nombre del restaurante:', r.nombre);
+          if (nuevoNombre !== null && nuevoNombre.trim() !== '') r.nombre = nuevoNombre.trim();
+          const nuevoEmail = prompt('Editar correo del restaurante:', r.email);
+          if (nuevoEmail !== null && nuevoEmail.trim() !== '') r.email = nuevoEmail.trim();
+          restaurantes[restIdx] = r;
+          localStorage.setItem('restaurantes', JSON.stringify(restaurantes));
+          mostrarModalEstadisticas();
+        }
       };
     });
     modal.querySelectorAll('.eliminar-cliente').forEach(btn => {
-      btn.onclick = function() {
-        const idx = this.closest('tr').dataset.idx;
-        eliminarCliente(idx);
+      btn.onclick = function(e) {
+        e.stopPropagation();
+        const idx = parseInt(this.closest('tr').dataset.idx);
+        let admins = JSON.parse(localStorage.getItem('admins')) || [];
+        let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
+        let restaurantes = JSON.parse(localStorage.getItem('restaurantes')) || [];
+        // Admin fijo no eliminable
+        if (idx === 0) return alert('No se puede eliminar el Admin fijo.');
+        if (idx > 0 && idx <= admins.length) {
+          // Eliminar admin
+          if (confirm('¿Seguro que deseas eliminar este admin?')) {
+            admins.splice(idx-1, 1);
+            localStorage.setItem('admins', JSON.stringify(admins));
+            mostrarModalEstadisticas();
+          }
+          return;
+        }
+        if (idx > admins.length && idx <= admins.length + clientes.length) {
+          // Eliminar cliente
+          const realIdx = idx - 1 - admins.length;
+          if (realIdx < 0 || realIdx >= clientes.length) return;
+          if (confirm('¿Seguro que deseas eliminar este cliente?')) {
+            // Eliminar ubicaciones asociadas
+            const cliente = clientes[realIdx];
+            if (cliente) {
+              localStorage.removeItem('ubicacionCliente_' + cliente.email);
+            }
+            clientes.splice(realIdx, 1);
+            localStorage.setItem('clientes', JSON.stringify(clientes));
+            mostrarModalEstadisticas();
+          }
+          return;
+        }
+        // Eliminar restaurante
+        const restIdx = idx - 1 - admins.length - clientes.length;
+        if (restIdx >= 0 && restIdx < restaurantes.length) {
+          if (confirm('¿Seguro que deseas eliminar este restaurante?')) {
+            restaurantes.splice(restIdx, 1);
+            localStorage.setItem('restaurantes', JSON.stringify(restaurantes));
+            mostrarModalEstadisticas();
+          }
+        }
       };
     });
     modal.querySelectorAll('.ver-ubicacion').forEach(btn => {
-      btn.onclick = function() {
-        const idx = this.closest('tr').dataset.idx;
-        verUbicacionCliente(idx);
+      btn.onclick = function(e) {
+        e.stopPropagation();
+        const idx = parseInt(this.closest('tr').dataset.idx);
+        let admins = JSON.parse(localStorage.getItem('admins')) || [];
+        let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
+        if (idx > admins.length && idx <= admins.length + clientes.length) {
+          verUbicacionCliente(idx);
+        }
       };
     });
-  }
-
-  function editarCliente(idx) {
-    let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
-    const c = clientes[idx - (1 + (JSON.parse(localStorage.getItem('admins'))||[]).length)]; // idx offset: admin + admins
-    if (!c) return;
-    const nuevoNombre = prompt('Editar nombre del cliente:', c.nombre);
-    if (nuevoNombre !== null && nuevoNombre.trim() !== '') {
-      c.nombre = nuevoNombre.trim();
-    }
-    const nuevoEmail = prompt('Editar correo del cliente:', c.email);
-    if (nuevoEmail !== null && nuevoEmail.trim() !== '') {
-      // Si cambia el email, también cambiar la key de ubicación si existe
-      const oldEmail = c.email;
-      c.email = nuevoEmail.trim();
-      const ubicKey = 'ubicacionCliente_' + oldEmail;
-      if (localStorage.getItem(ubicKey)) {
-        localStorage.setItem('ubicacionCliente_' + c.email, localStorage.getItem(ubicKey));
-        localStorage.removeItem(ubicKey);
-      }
-    }
-    clientes[idx - (1 + (JSON.parse(localStorage.getItem('admins'))||[]).length)] = c;
-    localStorage.setItem('clientes', JSON.stringify(clientes));
-    mostrarModalEstadisticas();
-  }
-
-  function eliminarCliente(idx) {
-    let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
-    const admins = JSON.parse(localStorage.getItem('admins')) || [];
-    const realIdx = idx - (1 + admins.length); // idx offset: admin + admins
-    if (realIdx < 0 || realIdx >= clientes.length) return;
-    if (confirm('¿Seguro que deseas eliminar este cliente?')) {
-      // Eliminar ubicaciones asociadas
-      const cliente = clientes[realIdx];
-      if (cliente) {
-        localStorage.removeItem('ubicacionCliente_' + cliente.email);
-      }
-      clientes.splice(realIdx, 1);
-      localStorage.setItem('clientes', JSON.stringify(clientes));
-      mostrarModalEstadisticas();
-    }
-  }
-
-  function verUbicacionCliente(idx) {
-    let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
-    const admins = JSON.parse(localStorage.getItem('admins')) || [];
-    const c = clientes[idx - (1 + admins.length)];
-    if (!c) return;
-    const ubic = localStorage.getItem('ubicacionCliente_' + c.email);
-    if (!ubic) {
-      alert('Este cliente no ha enviado ubicación.');
-      return;
-    }
-    const { lat, lon } = JSON.parse(ubic);
-    // Mostrar modal con links a Google Maps y Waze
-    let modal = document.createElement('div');
-    modal.style.position = 'fixed';
-    modal.style.top = 0;
-    modal.style.left = 0;
-    modal.style.width = '100vw';
-    modal.style.height = '100vh';
-    modal.style.background = 'rgba(0,0,0,0.4)';
-    modal.style.display = 'flex';
-    modal.style.alignItems = 'center';
-    modal.style.justifyContent = 'center';
-    modal.style.zIndex = 20000;
-    modal.innerHTML = `
-      <div style="background:#fff;padding:32px 24px 24px 24px;border-radius:16px;min-width:320px;max-width:95vw;max-height:90vh;overflow:auto;position:relative;box-shadow:0 8px 32px rgba(0,0,0,0.18);">
-        <h2 style='margin-bottom:18px;text-align:center;'>Ubicación del Cliente</h2>
-        <button id='close-ubicacion-modal' style='position:absolute;top:12px;right:12px;font-size:22px;background:none;border:none;cursor:pointer;'>&times;</button>
-        <div style='margin-bottom:12px;'>
-          <b>Lat:</b> ${lat}, <b>Lon:</b> ${lon}
-        </div>
-        <a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank" style="color:#2257ff;text-decoration:underline;font-size:1.08em;margin-right:18px;">Ver en Google Maps</a>
-        <a href="https://waze.com/ul?ll=${lat},${lon}&navigate=yes" target="_blank" style="color:#43a047;text-decoration:underline;font-size:1.08em;">Ver en Waze</a>
-      </div>
-    `;
-    document.body.appendChild(modal);
-    document.getElementById('close-ubicacion-modal').onclick = () => modal.remove();
-    modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+    // Mostrar/ocultar contraseña
+    modal.querySelectorAll('.ver-pass').forEach(btn => {
+      btn.onclick = function() {
+        const input = this.parentElement.querySelector('.input-password');
+        if (input.type === 'password') {
+          input.type = 'text';
+          this.textContent = '🙈';
+        } else {
+          input.type = 'password';
+          this.textContent = '👁️';
+        }
+      };
+    });
+    // Editar contraseña
+    modal.querySelectorAll('.editar-pass').forEach(btn => {
+      btn.onclick = function() {
+        const tr = this.closest('tr');
+        const idx = tr.dataset.idx;
+        const input = tr.querySelector('.input-password');
+        input.readOnly = false;
+        input.type = 'text';
+        input.focus();
+        input.style.background = '#fffbe7';
+        this.textContent = 'Guardar';
+        this.onclick = function() {
+          const nuevaPass = input.value.trim();
+          if (!nuevaPass) { alert('La contraseña no puede estar vacía.'); return; }
+          // Actualizar en localStorage según tipo
+          let admins = JSON.parse(localStorage.getItem('admins')) || [];
+          let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
+          let restaurantes = JSON.parse(localStorage.getItem('restaurantes')) || [];
+          if (idx == 0) {
+            // Admin fijo
+            // No se puede cambiar en localStorage, solo en memoria
+            alert('No se puede cambiar la contraseña del Admin fijo.');
+          } else if (idx <= admins.length) {
+            admins[idx-1].password = nuevaPass;
+            localStorage.setItem('admins', JSON.stringify(admins));
+          } else if (idx <= admins.length + clientes.length) {
+            clientes[idx-1-admins.length].password = nuevaPass;
+            localStorage.setItem('clientes', JSON.stringify(clientes));
+          } else {
+            restaurantes[idx-1-admins.length-clientes.length].password = nuevaPass;
+            localStorage.setItem('restaurantes', JSON.stringify(restaurantes));
+          }
+          input.readOnly = true;
+          input.type = 'password';
+          input.style.background = '';
+          this.textContent = 'Editar';
+          mostrarModalEstadisticas();
+        };
+      };
+    });
   }
 
   // --- MODAL DE CONFIGURACIÓN ---
@@ -622,6 +696,42 @@ document.addEventListener('DOMContentLoaded', function() {
       };
     });
   }
+
+  // --- ÚLTIMOS USUARIOS REGISTRADOS ---
+  function mostrarUltimosUsuarios() {
+    const tbody = document.querySelector('#tabla-ultimos-usuarios tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    const clientes = JSON.parse(localStorage.getItem('clientes')) || [];
+    // Filtrar solo los creados hoy
+    const hoy = new Date();
+    hoy.setHours(0,0,0,0);
+    const usuariosHoy = clientes.filter(c => {
+      if (!c.fechaRegistro) return false;
+      const fecha = new Date(c.fechaRegistro);
+      fecha.setHours(0,0,0,0);
+      return fecha.getTime() === hoy.getTime();
+    });
+    if (usuariosHoy.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3" style="color:#888;text-align:center;">No hay usuarios registrados hoy.</td></tr>';
+      return;
+    }
+    usuariosHoy.forEach(u => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${u.nombre}</td><td>${u.email}</td><td>${u.fechaRegistro ? new Date(u.fechaRegistro).toLocaleDateString() : ''}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+  // Llamar al cargar la página y cada vez que cambian los usuarios
+  mostrarUltimosUsuarios();
+  window.addEventListener('storage', function(e) {
+    if (["clientes"].includes(e.key)) mostrarUltimosUsuarios();
+  });
+  const originalSetItemUsuarios = localStorage.setItem;
+  localStorage.setItem = function(key, value) {
+    originalSetItemUsuarios.apply(this, arguments);
+    if (["clientes"].includes(key)) mostrarUltimosUsuarios();
+  };
 });
 // --- CONTADOR DE USUARIOS PROGRESIVO ---
 function actualizarContadorUsuarios() {
@@ -653,5 +763,28 @@ window.addEventListener('storage', function(e) {
     if (["clientes","admins","restaurantes"].includes(key)) {
       actualizarContadorUsuarios();
     }
+  };
+})();
+
+// Al registrar un nuevo cliente, guardar la fecha de registro si no existe
+(function() {
+  const originalSetItem = localStorage.setItem;
+  localStorage.setItem = function(key, value) {
+    if (key === 'clientes') {
+      try {
+        let arr = JSON.parse(value);
+        let changed = false;
+        if (Array.isArray(arr)) {
+          arr.forEach(c => {
+            if (!c.fechaRegistro) {
+              c.fechaRegistro = new Date().toISOString();
+              changed = true;
+            }
+          });
+          if (changed) value = JSON.stringify(arr);
+        }
+      } catch {}
+    }
+    return originalSetItem.apply(this, arguments);
   };
 })();
