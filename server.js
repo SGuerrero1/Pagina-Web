@@ -4,6 +4,8 @@ const express = require('express');
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
+require('dotenv').config();
 const app = express();
 const PORT = 3001;
 
@@ -32,6 +34,15 @@ db.serialize(() => {
   )`);
 });
 
+// Configura aquí tus credenciales de correo (reemplaza por variables de entorno en producción)
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
 // Registro de usuario
 app.post('/api/usuarios', async (req, res) => {
   const { nombre, email, password, rol } = req.body;
@@ -54,13 +65,26 @@ app.post('/api/login', (req, res) => {
   });
 });
 
-// Recuperar contraseña (simulado)
+// Recuperar contraseña (envía correo real)
 app.post('/api/recuperar', (req, res) => {
   const { email } = req.body;
   db.get('SELECT * FROM usuarios WHERE email = ?', [email], (err, user) => {
     if (err || !user) return res.status(400).json({ error: 'No existe ese usuario' });
-    // Aquí deberías enviar un email real con un token, pero solo simulamos
-    res.json({ mensaje: 'Enlace de recuperación enviado (simulado)' });
+    // Enlace de recuperación (puedes agregar un token seguro si lo deseas)
+    const resetUrl = `http://localhost:3000/reset.html?email=${encodeURIComponent(email)}`;
+    const mailOptions = {
+      from: `FoodApp <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'Recuperación de contraseña - FoodApp',
+      html: `<p>Hola ${user.nombre},</p><p>Haz clic en el siguiente enlace para restablecer tu contraseña:</p><p><a href="${resetUrl}">${resetUrl}</a></p><p>Si no solicitaste este cambio, ignora este correo.</p>`
+    };
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'No se pudo enviar el correo. Intenta más tarde.' });
+      }
+      res.json({ mensaje: 'Enlace de recuperación enviado a tu correo.' });
+    });
   });
 });
 
