@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FoodApp Inicio de Sesion</title>
+  <title>Food App</title>
+  <link rel="icon" type="image/png" href="DASHBOARDS/IMAGENES RESTAURANTE/6255e2e41db6c.jpeg" />
   <link rel="stylesheet" href="styles.css" />
   <link
     rel="stylesheet"
@@ -82,7 +83,23 @@
         </div>
         <div id="login-error" class="error-message"></div>
         <button type="submit" class="login-btn">Iniciar Sesión</button>
+        <div style="margin-top:10px;text-align:right;">
+          <a href="#" id="forgot-password-link" style="font-size:0.98em;color:#ff5722;text-decoration:underline;cursor:pointer;">¿Olvidaste tu contraseña?</a>
+        </div>
       </form>
+      <div id="forgot-password-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;z-index:10000;">
+        <div style="background:#fff;padding:32px 24px 24px 24px;border-radius:16px;min-width:320px;max-width:98vw;max-height:92vh;overflow:auto;position:relative;box-shadow:0 8px 32px rgba(0,0,0,0.18);">
+          <button id="close-forgot-modal" style="position:absolute;top:12px;right:12px;font-size:22px;background:none;border:none;cursor:pointer;">&times;</button>
+          <h3 style="margin-bottom:18px;text-align:center;">Recuperar Contraseña</h3>
+          <form id="forgot-form">
+            <div class="form-group">
+              <input type="email" id="forgot-email" class="form-control" placeholder="Correo electrónico registrado" required>
+            </div>
+            <button type="submit" class="login-btn" style="width:100%;margin-top:10px;">Enviar enlace</button>
+            <div id="forgot-msg" style="margin-top:10px;font-size:0.98em;color:#388e3c;text-align:center;"></div>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 

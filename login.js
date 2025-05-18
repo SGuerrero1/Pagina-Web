@@ -13,7 +13,7 @@ const usuariosFijos = [
 ];
 
 // Registro solo cliente
-document.getElementById('form-registro').addEventListener('submit', function(e) {
+document.getElementById('form-registro').addEventListener('submit', async function(e) {
   e.preventDefault();
 
   const inputs = this.querySelectorAll('input, select');
@@ -21,90 +21,106 @@ document.getElementById('form-registro').addEventListener('submit', function(e) 
   const email = inputs[1].value.trim();
   const password = inputs[2].value.trim();
   const confirmPassword = inputs[3].value.trim();
+  const rol = 'cliente';
 
   if (password !== confirmPassword) {
     alert('Las contraseñas no coinciden.');
     return;
   }
 
-  const nuevoCliente = {
-    nombre,
-    email,
-    password,
-    rol: 'cliente'
-  };
-
-  // Guardar en array de clientes (no sobrescribir)
-  let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
-  if (!clientes.some(c => c.email === email)) {
-    clientes.push(nuevoCliente);
-    localStorage.setItem('clientes', JSON.stringify(clientes));
+  try {
+    const res = await fetch('http://localhost:3001/api/usuarios', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre, email, password, rol })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      alert('Registro exitoso. Ahora puedes iniciar sesión.');
+      this.reset();
+    } else {
+      alert(data.error || 'Error al registrar usuario.');
+    }
+  } catch (err) {
+    alert('Error de conexión con el servidor.');
   }
-  // Guardamos cliente en localStorage bajo clave "clienteRegistrado" (para compatibilidad)
-  localStorage.setItem('clienteRegistrado', JSON.stringify(nuevoCliente));
-  alert('Registro exitoso. Ahora puedes iniciar sesión.');
-
-  this.reset();
 });
 
 // Login validando todos los roles
 // --- MODIFICADO: permite login de admins y restaurantes creados desde configuración ---
-document.getElementById('login-form').addEventListener('submit', function(e) {
+document.getElementById('login-form').addEventListener('submit', async function(e) {
   e.preventDefault();
 
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value.trim();
   const errorDiv = document.getElementById('login-error');
 
-  // Obtén cliente guardado (si existe)
-  const clienteGuardado = JSON.parse(localStorage.getItem('clienteRegistrado'));
-
-  // Buscar usuario en usuarios fijos
-  let usuarioEncontrado = usuariosFijos.find(
-    u => u.email === username && u.password === password
-  );
-
-  // Si no está en fijos, busca en cliente registrado
-  if (!usuarioEncontrado && clienteGuardado) {
-    if (clienteGuardado.email === username && clienteGuardado.password === password) {
-      usuarioEncontrado = clienteGuardado;
+  try {
+    const res = await fetch('http://localhost:3001/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: username, password })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      // Guardar rol para mantener sesión (puedes usar localStorage o sessionStorage solo para el rol)
+      localStorage.setItem('rol', data.rol);
+      localStorage.setItem('userRole', data.rol === 'restaurante' ? 'restaurant' : data.rol);
+      // Redirigir según rol
+      switch (data.rol) {
+        case 'admin':
+          window.location.href = 'DASHBOARDS/dashboard_admin.html';
+          break;
+        case 'restaurante':
+          window.location.href = 'DASHBOARDS/dashboard_restaurante.html';
+          break;
+        case 'cliente':
+          window.location.href = 'DASHBOARDS/dashboard_cliente.html';
+          break;
+        default:
+          errorDiv.textContent = 'Rol no válido.';
+      }
+    } else {
+      errorDiv.textContent = data.error || 'Usuario o contraseña incorrectos.';
     }
-  }
-
-  // --- NUEVO: buscar en admins y restaurantes creados desde configuración ---
-  if (!usuarioEncontrado) {
-    const admins = JSON.parse(localStorage.getItem('admins')) || [];
-    const restaurantes = JSON.parse(localStorage.getItem('restaurantes')) || [];
-    const adminEncontrado = admins.find(a => a.email === username && a.password === password);
-    const restEncontrado = restaurantes.find(r => r.email === username && r.password === password);
-    if (adminEncontrado) {
-      usuarioEncontrado = { ...adminEncontrado, rol: 'admin' };
-    } else if (restEncontrado) {
-      usuarioEncontrado = { ...restEncontrado, rol: 'restaurante' };
-    }
-  }
-
-  if (!usuarioEncontrado) {
-    errorDiv.textContent = 'Usuario o contraseña incorrectos.';
-    return;
-  }
-
-  // Guardar rol para mantener sesión
-  localStorage.setItem('rol', usuarioEncontrado.rol);
-  localStorage.setItem('userRole', usuarioEncontrado.rol === 'restaurante' ? 'restaurant' : usuarioEncontrado.rol);
-
-  // Redirigir según rol
-  switch (usuarioEncontrado.rol) {
-    case 'admin':
-      window.location.href = 'DASHBOARDS/dashboard_admin.html';
-      break;
-    case 'restaurante':
-      window.location.href = 'DASHBOARDS/dashboard_restaurante.html';
-      break;
-    case 'cliente':
-      window.location.href = 'DASHBOARDS/dashboard_cliente.html';
-      break;
-    default:
-      errorDiv.textContent = 'Rol no válido.';
+  } catch (err) {
+    errorDiv.textContent = 'Error de conexión con el servidor.';
   }
 });
+
+// --- OLVIDÉ MI CONTRASEÑA ---
+document.getElementById('forgot-password-link').onclick = function(e) {
+  e.preventDefault();
+  document.getElementById('forgot-password-modal').style.display = 'flex';
+  document.getElementById('forgot-msg').textContent = '';
+  document.getElementById('forgot-form').reset();
+};
+document.getElementById('close-forgot-modal').onclick = function() {
+  document.getElementById('forgot-password-modal').style.display = 'none';
+};
+document.getElementById('forgot-password-modal').onclick = function(e) {
+  if (e.target === this) this.style.display = 'none';
+};
+document.getElementById('forgot-form').onsubmit = async function(ev) {
+  ev.preventDefault();
+  const email = document.getElementById('forgot-email').value.trim();
+  const msg = document.getElementById('forgot-msg');
+  try {
+    const res = await fetch('http://localhost:3001/api/recuperar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      msg.style.color = '#388e3c';
+      msg.innerHTML = 'Se ha enviado un enlace de recuperación a tu correo (simulado). <br><a href="reset.html?email='+encodeURIComponent(email)+'" target="_blank" style="color:#ff5722;text-decoration:underline;">Cambiar contraseña</a>';
+    } else {
+      msg.style.color = '#e53935';
+      msg.textContent = data.error || 'No se encontró ninguna cuenta con ese correo.';
+    }
+  } catch (err) {
+    msg.style.color = '#e53935';
+    msg.textContent = 'Error de conexión con el servidor.';
+  }
+};

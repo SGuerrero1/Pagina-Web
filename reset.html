@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cambiar Contraseña - Food App</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" type="image/png" href="DASHBOARDS/IMAGENES RESTAURANTE/6255e2e41db6c.jpeg" />
+</head>
+<body>
+  <div class="login-container" style="justify-content:center;align-items:center;">
+    <div class="right-panel" style="width:100%;max-width:400px;">
+      <h2 class="login-title">Cambiar Contraseña</h2>
+      <form id="reset-form">
+        <div class="form-group">
+          <input type="email" id="reset-email" class="form-control" placeholder="Correo electrónico" required>
+        </div>
+        <div class="form-group">
+          <input type="password" id="reset-password" class="form-control" placeholder="Nueva contraseña" required>
+        </div>
+        <div class="form-group">
+          <input type="password" id="reset-password2" class="form-control" placeholder="Confirmar nueva contraseña" required>
+        </div>
+        <div id="reset-msg" class="error-message" style="margin-bottom:10px;"></div>
+        <button type="submit" class="login-btn">Guardar Contraseña</button>
+      </form>
+    </div>
+  </div>
+  <script src="reset.js"></script>
+</body>
+</html>

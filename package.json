@@ -1,0 +1,28 @@
+{
+  "name": "pagina-web",
+  "version": "1.0.0",
+  "description": "Este es un backend sencillo para FoodApp usando Node.js, Express y SQLite.",
+  "main": "login.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SGuerrero1/Pagina-Web.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SGuerrero1/Pagina-Web/issues"
+  },
+  "homepage": "https://github.com/SGuerrero1/Pagina-Web#readme",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "nodemailer": "^7.0.3",
+    "sqlite3": "^5.1.7"
+  }
+}
