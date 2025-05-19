@@ -549,9 +549,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!localStorage.getItem('superadmin')) {
       localStorage.setItem('superadmin', JSON.stringify(superadmin));
     }
+    let perfil = JSON.parse(localStorage.getItem('superadmin'));
     let admins = JSON.parse(localStorage.getItem('admins')) || [];
     let restaurantes = JSON.parse(localStorage.getItem('restaurantes')) || [];
-    let perfil = JSON.parse(localStorage.getItem('superadmin'));
     modal.innerHTML = `
       <div style="background:#fff;padding:36px 28px 28px 28px;border-radius:22px;min-width:350px;max-width:98vw;max-height:92vh;overflow:auto;position:relative;box-shadow:0 10px 40px rgba(34,87,255,0.13);font-family:'Segoe UI',Arial,sans-serif;">
         <button id="close-config-modal" style="position:absolute;top:18px;right:18px;font-size:26px;background:none;border:none;cursor:pointer;color:#ff5722;transition:color 0.2s;">&times;</button>
@@ -579,7 +579,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <b style='color:#ff5722;'>3. Eliminar usuario de administrador</b>
             <ul style="padding-left:18px;margin:10px 0 0 0;">
               <li><b>SuperAdmin</b> <span style='color:#bbb;'>(no se puede eliminar)</span></li>
-              ${admins.map((a, i) => `<li style='margin:6px 0;'>${a.nombre} <span style='color:#888;'>(${a.email})</span> <button class='eliminar-admin' data-idx='${i}' style='background:#e53935;color:#fff;border:none;padding:3px 12px;border-radius:7px;cursor:pointer;font-size:0.98em;transition:background 0.2s;'>Eliminar</button></li>`).join('')}
+              ${admins.length === 0 ? '<li style="color:#888;">No hay administradores registrados</li>' : admins.map((a, i) => `<li style='margin:6px 0;'>${a.nombre} <span style='color:#888;'>(${a.email})</span> <button class='eliminar-admin' data-idx='${i}' style='background:#e53935;color:#fff;border:none;padding:3px 12px;border-radius:7px;cursor:pointer;font-size:0.98em;transition:background 0.2s;'>Eliminar</button></li>`).join('')}
             </ul>
           </div>
           <div style="background:#f7f7f7;border-radius:14px;padding:22px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
@@ -607,13 +607,12 @@ document.addEventListener('DOMContentLoaded', function() {
     `;
     modal.querySelector('#close-config-modal').onclick = () => modal.remove();
     modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
-
     // Crear admin
     modal.querySelector('#form-nuevo-admin').onsubmit = function(ev) {
       ev.preventDefault();
       const [nombre, email, password] = Array.from(this.querySelectorAll('input')).map(i=>i.value.trim());
       if (!nombre || !email || !password) return;
-      admins.push({nombre, email, password, rol:'admin'});
+      admins.push({ nombre, email, password });
       localStorage.setItem('admins', JSON.stringify(admins));
       mostrarModalConfiguracion();
     };
@@ -622,7 +621,7 @@ document.addEventListener('DOMContentLoaded', function() {
       ev.preventDefault();
       const [nombre, email, password] = Array.from(this.querySelectorAll('input')).map(i=>i.value.trim());
       if (!nombre || !email || !password) return;
-      restaurantes.push({nombre, email, password, rol:'restaurante'});
+      restaurantes.push({ nombre, email, password });
       localStorage.setItem('restaurantes', JSON.stringify(restaurantes));
       mostrarModalConfiguracion();
     };
@@ -644,7 +643,7 @@ document.addEventListener('DOMContentLoaded', function() {
         mostrarModalConfiguracion();
       };
     });
-    // Guardar perfil
+    // Guardar perfil (solo local)
     modal.querySelector('#form-perfil').onsubmit = function(ev) {
       ev.preventDefault();
       perfil.nombre = modal.querySelector('#perfil-nombre').value.trim();
