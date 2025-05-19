@@ -97,50 +97,29 @@
     <script src="rest.js"></script>
     <script>
         // Función para cerrar sesión
-        const logoutButton = document.getElementById('restaurante-logout');
+        const logoutButton = document.getElementById('restaurant-logout') || document.getElementById('restaurante-logout');
         if (logoutButton) {
             logoutButton.addEventListener('click', function(e) {
                 e.preventDefault();
                 // Limpia datos de sesión
                 localStorage.removeItem('rol');
                 localStorage.removeItem('userRole');
-                // Redirige al login
+                // Redirige al index
                 window.location.href = '../index.html';
             });
         }
 
-        // --- MOSTRAR PEDIDOS REALES EN LA TABLA ---
-        document.addEventListener('DOMContentLoaded', function() {
+        // --- MOSTRAR PEDIDOS REALES EN LA TABLA DESDE LA BASE DE DATOS ---
+        document.addEventListener('DOMContentLoaded', async function() {
             const tablaPedidos = document.getElementById('tabla-pedidos-recientes').querySelector('tbody');
-            const valoracionInfo = document.querySelector('.dashboard-cards .card-info h3')?.textContent?.includes('Valoración')
-                ? document.querySelector('.dashboard-cards .card-info p')
-                : null;
-            function calcularValoracionRestaurante() {
-                // Recorre todas las calificaciones de platos de todos los clientes
-                let total = 0, count = 0;
-                for (let key in localStorage) {
-                    if (key.startsWith('calificacionesPlatos_')) {
-                        try {
-                            const calObj = JSON.parse(localStorage.getItem(key));
-                            for (let plato in calObj) {
-                                total += calObj[plato];
-                                count++;
-                            }
-                        } catch {}
-                    }
-                }
-                if (valoracionInfo) {
-                    if (count === 0) {
-                        valoracionInfo.textContent = 'Sin valoraciones';
-                    } else {
-                        const avg = (total / count).toFixed(2);
-                        valoracionInfo.textContent = `${avg}/5.0`;
-                    }
-                }
-            }
-            function renderPedidos() {
-                let pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
-                if (pedidos.length === 0) {
+            let restaurantes = JSON.parse(localStorage.getItem('restaurantes')) || [];
+            let rest = restaurantes[0] || null;
+            if (!rest || !rest.email) return;
+            const emailRest = rest.email;
+            try {
+                const resPedidos = await fetch('https://pagina-web-wm0x.onrender.com/api/pedidos?restaurante=' + encodeURIComponent(emailRest));
+                const pedidos = await resPedidos.json();
+                if (!Array.isArray(pedidos) || pedidos.length === 0) {
                     tablaPedidos.innerHTML = `<tr><td colspan='6' style='color:#888;text-align:center;padding:18px;'>No hay pedidos realizados.</td></tr>`;
                     return;
                 }
@@ -148,53 +127,104 @@
                     <tr>
                         <td>#${idx + 1}</td>
                         <td>${p.cliente || '-'}</td>
-                        <td>${p.platos.map(pl=>`${pl.nombre} <span style='color:#ff5722;'>x${pl.cantidad}</span>`).join(', ')}</td>
+                        <td>${Array.isArray(p.platos) ? p.platos.map(pl=>`${pl.nombre} <span style='color:#ff5722;'>x${pl.cantidad}</span>`).join(', ') : '-'}</td>
                         <td>${p.total}</td>
                         <td><span class="status ${p.estado === 'Pendiente' ? 'pending' : (p.estado === 'Aceptado' ? 'in-progress' : (p.estado === 'Entregado' ? 'ready' : 'rechazado'))}">${p.estado || 'Pendiente'}</span></td>
                         <td>
                             ${p.estado === 'Pendiente' ? `
-                                <button class="btn-small aceptar-pedido" data-idx="${idx}">Aceptar</button>
-                                <button class="btn-small rechazar-pedido" data-idx="${idx}">Rechazar</button>
+                                <button class="btn-small aceptar-pedido" data-id="${p.id}">Aceptar</button>
+                                <button class="btn-small rechazar-pedido" data-id="${p.id}">Rechazar</button>
                             ` : p.estado === 'Aceptado' ? `
-                                <button class="btn-small entregar-pedido" data-idx="${idx}">Pedido Entregado</button>
+                                <button class="btn-small entregar-pedido" data-id="${p.id}">Pedido Entregado</button>
                             ` : '<span style="color:#888;">Sin acciones</span>'}
                         </td>
                     </tr>
                 `).join('');
                 // Acciones aceptar/rechazar/entregar
                 tablaPedidos.querySelectorAll('.aceptar-pedido').forEach(btn => {
-                    btn.onclick = function() {
-                        const idx = parseInt(btn.getAttribute('data-idx'));
-                        pedidos[idx].estado = 'Aceptado';
-                        localStorage.setItem('pedidos', JSON.stringify(pedidos));
-                        renderPedidos();
+                    btn.onclick = async function() {
+                        const id = btn.getAttribute('data-id');
+                        await fetch('https://pagina-web-wm0x.onrender.com/api/pedidos/' + id + '/estado', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ estado: 'Aceptado' })
+                        });
+                        location.reload();
                     };
                 });
                 tablaPedidos.querySelectorAll('.rechazar-pedido').forEach(btn => {
-                    btn.onclick = function() {
-                        const idx = parseInt(btn.getAttribute('data-idx'));
-                        pedidos[idx].estado = 'Rechazado';
-                        localStorage.setItem('pedidos', JSON.stringify(pedidos));
-                        renderPedidos();
+                    btn.onclick = async function() {
+                        const id = btn.getAttribute('data-id');
+                        await fetch('https://pagina-web-wm0x.onrender.com/api/pedidos/' + id + '/estado', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ estado: 'Rechazado' })
+                        });
+                        location.reload();
                     };
                 });
                 tablaPedidos.querySelectorAll('.entregar-pedido').forEach(btn => {
-                    btn.onclick = function() {
-                        const idx = parseInt(btn.getAttribute('data-idx'));
-                        pedidos[idx].estado = 'Entregado';
-                        localStorage.setItem('pedidos', JSON.stringify(pedidos));
-                        renderPedidos();
+                    btn.onclick = async function() {
+                        const id = btn.getAttribute('data-id');
+                        await fetch('https://pagina-web-wm0x.onrender.com/api/pedidos/' + id + '/estado', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ estado: 'Entregado' })
+                        });
+                        location.reload();
                     };
                 });
+            } catch {
+                tablaPedidos.innerHTML = `<tr><td colspan='6' style='color:#888;text-align:center;padding:18px;'>Error al cargar pedidos.</td></tr>`;
             }
-            renderPedidos();
-            calcularValoracionRestaurante();
-            // Actualizar valoración cada vez que cambian las calificaciones
-            window.addEventListener('storage', function(e) {
-                if (e.key && e.key.startsWith('calificacionesPlatos_')) {
-                    calcularValoracionRestaurante();
-                }
-            });
+        });
+
+        // --- DASHBOARD RESTAURANTE: DATOS EN VIVO DESDE LA BASE DE DATOS ---
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Obtener restaurante logueado
+            let restaurantes = JSON.parse(localStorage.getItem('restaurantes')) || [];
+            let rest = restaurantes[0] || null;
+            if (!rest || !rest.email) return;
+            const emailRest = rest.email;
+
+            // Pedidos pendientes
+            try {
+                const resPedidos = await fetch('https://pagina-web-wm0x.onrender.com/api/pedidos?restaurante=' + encodeURIComponent(emailRest));
+                const pedidos = await resPedidos.json();
+                const pendientes = pedidos.filter(p => p.estado === 'Pendiente');
+                document.querySelector('.dashboard-cards .card-info h3:contains("Pedidos Pendientes")').nextElementSibling.textContent = pendientes.length + ' pedidos';
+                // Ingresos hoy
+                const hoy = new Date();
+                const yyyy = hoy.getFullYear();
+                const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+                const dd = String(hoy.getDate()).padStart(2, '0');
+                const fechaHoy = `${yyyy}-${mm}-${dd}`;
+                let ingresosHoy = 0;
+                pedidos.forEach(p => {
+                    if (p.estado === 'Entregado' && p.fecha) {
+                        let fechaPedido = new Date(p.fecha);
+                        let f = `${fechaPedido.getFullYear()}-${String(fechaPedido.getMonth()+1).padStart(2,'0')}-${String(fechaPedido.getDate()).padStart(2,'0')}`;
+                        if (f === fechaHoy) ingresosHoy += Number(p.total) || 0;
+                    }
+                });
+                document.querySelector('.dashboard-cards .card-info h3:contains("Ingresos Hoy")').nextElementSibling.textContent = '$' + ingresosHoy.toFixed(2);
+            } catch {}
+
+            // Platos activos
+            try {
+                const resPlatos = await fetch('https://pagina-web-wm0x.onrender.com/api/platos?restaurante=' + encodeURIComponent(emailRest));
+                const platos = await resPlatos.json();
+                const activos = platos.filter(p => !p.oculto);
+                document.querySelector('.dashboard-cards .card-info h3:contains("Platos Activos")').nextElementSibling.textContent = activos.length + ' platos';
+            } catch {}
+
+            // Valoración
+            try {
+                const resVal = await fetch('https://pagina-web-wm0x.onrender.com/api/restaurantes/valoracion?email=' + encodeURIComponent(emailRest));
+                const data = await resVal.json();
+                let val = data.valoracion ? Number(data.valoracion).toFixed(2) : 'Sin valoraciones';
+                document.querySelector('.dashboard-cards .card-info h3:contains("Valoración")').nextElementSibling.textContent = val === 'Sin valoraciones' ? val : (val + '/5.0');
+            } catch {}
         });
 
         // --- ACCIONES RÁPIDAS ---

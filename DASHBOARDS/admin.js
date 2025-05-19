@@ -608,19 +608,51 @@ document.addEventListener('DOMContentLoaded', function() {
     modal.querySelector('#close-config-modal').onclick = () => modal.remove();
     modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
     // Crear admin
-    modal.querySelector('#form-nuevo-admin').onsubmit = function(ev) {
+    modal.querySelector('#form-nuevo-admin').onsubmit = async function(ev) {
       ev.preventDefault();
       const [nombre, email, password] = Array.from(this.querySelectorAll('input')).map(i=>i.value.trim());
       if (!nombre || !email || !password) return;
+      // Guardar en base de datos
+      try {
+        const res = await fetch('https://pagina-web-wm0x.onrender.com/api/usuarios', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nombre, email, password, rol: 'admin' })
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          alert(data.error || 'Error al registrar admin en la base de datos');
+          return;
+        }
+      } catch (err) {
+        alert('Error de conexión con el servidor.');
+        return;
+      }
       admins.push({ nombre, email, password });
       localStorage.setItem('admins', JSON.stringify(admins));
       mostrarModalConfiguracion();
     };
     // Crear restaurante
-    modal.querySelector('#form-nuevo-rest').onsubmit = function(ev) {
+    modal.querySelector('#form-nuevo-rest').onsubmit = async function(ev) {
       ev.preventDefault();
       const [nombre, email, password] = Array.from(this.querySelectorAll('input')).map(i=>i.value.trim());
       if (!nombre || !email || !password) return;
+      // Guardar en base de datos
+      try {
+        const res = await fetch('https://pagina-web-wm0x.onrender.com/api/usuarios', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nombre, email, password, rol: 'restaurante' })
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          alert(data.error || 'Error al registrar restaurante en la base de datos');
+          return;
+        }
+      } catch (err) {
+        alert('Error de conexión con el servidor.');
+        return;
+      }
       restaurantes.push({ nombre, email, password });
       localStorage.setItem('restaurantes', JSON.stringify(restaurantes));
       mostrarModalConfiguracion();
@@ -681,12 +713,21 @@ document.addEventListener('DOMContentLoaded', function() {
       modal.style.zIndex = 10000;
       document.body.appendChild(modal);
     }
-    // Obtener pedidos de localStorage
     let pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+    // Filtro por fecha
+    let fechaHoy = new Date();
+    let yyyy = fechaHoy.getFullYear();
+    let mm = String(fechaHoy.getMonth() + 1).padStart(2, '0');
+    let dd = String(fechaHoy.getDate()).padStart(2, '0');
+    let fechaDefault = `${yyyy}-${mm}-${dd}`;
     modal.innerHTML = `
       <div style="background:#fff;padding:32px 24px 24px 24px;border-radius:16px;min-width:340px;max-width:98vw;max-height:92vh;overflow:auto;position:relative;box-shadow:0 8px 32px rgba(0,0,0,0.18);">
         <h2 style='margin-bottom:18px;text-align:center;'>Pedidos de Clientes</h2>
         <button id='close-pedidos-modal-admin' style='position:absolute;top:12px;right:12px;font-size:22px;background:none;border:none;cursor:pointer;'>&times;</button>
+        <div style='margin-bottom:12px;display:flex;align-items:center;gap:18px;'>
+          <label style='font-weight:500;'>Filtrar por día: <input type='date' id='filtro-fecha-pedidos' value='${fechaDefault}' style='padding:4px 8px;border-radius:6px;border:1px solid #ccc;'></label>
+          <span id='cantidad-filtrada-pedidos' style='color:#ff5722;font-weight:500;'></span>
+        </div>
         <table style='width:100%;border-collapse:collapse;'>
           <thead>
             <tr style='background:#f7f7f7;'>
@@ -697,44 +738,79 @@ document.addEventListener('DOMContentLoaded', function() {
               <th style='padding:10px 8px;text-align:left;'>Acciones</th>
             </tr>
           </thead>
-          <tbody>
-            ${pedidos.length === 0 ? `<tr><td colspan='5' style='color:#888;text-align:center;padding:18px;'>No hay pedidos realizados.</td></tr>` : pedidos.map((p, idx) => `
-              <tr data-idx='${idx}'>
-                <td style='padding:8px 8px;'>${p.cliente || '-'}</td>
-                <td style='padding:8px 8px;'>${p.platos.map(pl=>`${pl.nombre} <span style='color:#ff5722;'>x${pl.cantidad}</span>`).join(', ')}</td>
-                <td style='padding:8px 8px;'>$${p.total}</td>
-                <td style='padding:8px 8px;'>${p.estado || 'Pendiente'}</td>
-                <td style='padding:8px 8px;'>
-                  ${p.estado === 'Pendiente' ? `
-                    <button class='aceptar-pedido' style='background:#388e3c;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;margin-right:6px;'>Aceptar</button>
-                    <button class='rechazar-pedido' style='background:#e53935;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;'>Rechazar</button>
-                  ` : `<span style='color:#888;'>Sin acciones</span>`}
-                </td>
-              </tr>
-            `).join('')}
-          </tbody>
+          <tbody id='tbody-pedidos-admin'></tbody>
         </table>
       </div>
     `;
     modal.querySelector('#close-pedidos-modal-admin').onclick = () => modal.remove();
     modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
-    // Acciones aceptar/rechazar
-    modal.querySelectorAll('.aceptar-pedido').forEach(btn => {
-      btn.onclick = function() {
-        const idx = this.closest('tr').dataset.idx;
-        pedidos[idx].estado = 'Aceptado';
-        localStorage.setItem('pedidos', JSON.stringify(pedidos));
-        mostrarModalPedidosAdmin();
-      };
-    });
-    modal.querySelectorAll('.rechazar-pedido').forEach(btn => {
-      btn.onclick = function() {
-        const idx = this.closest('tr').dataset.idx;
-        pedidos[idx].estado = 'Rechazado';
-        localStorage.setItem('pedidos', JSON.stringify(pedidos));
-        mostrarModalPedidosAdmin();
-      };
-    });
+
+    // Función para renderizar pedidos filtrados
+    function renderPedidosFiltrados(fechaStr) {
+      let pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+      let filtrados = pedidos;
+      if (fechaStr) {
+        filtrados = pedidos.filter(p => {
+          if (!p.fecha) return false;
+          let fechaPedido = new Date(p.fecha);
+          let yyyy = fechaPedido.getFullYear();
+          let mm = String(fechaPedido.getMonth() + 1).padStart(2, '0');
+          let dd = String(fechaPedido.getDate()).padStart(2, '0');
+          let fechaPedidoStr = `${yyyy}-${mm}-${dd}`;
+          return fechaPedidoStr === fechaStr;
+        });
+      }
+      const tbody = modal.querySelector('#tbody-pedidos-admin');
+      tbody.innerHTML = filtrados.length === 0 ? `<tr><td colspan='5' style='color:#888;text-align:center;padding:18px;'>No hay pedidos para este día.</td></tr>` : filtrados.map((p, idx) => `
+        <tr data-idx='${idx}'>
+          <td style='padding:8px 8px;'>${p.cliente || '-'}</td>
+          <td style='padding:8px 8px;'>${p.platos.map(pl=>`${pl.nombre} <span style='color:#ff5722;'>x${pl.cantidad}</span>`).join(', ')}</td>
+          <td style='padding:8px 8px;'>$${p.total}</td>
+          <td style='padding:8px 8px;'>${p.estado || 'Pendiente'}</td>
+          <td style='padding:8px 8px;'>
+            ${p.estado === 'Pendiente' ? `
+              <button class='aceptar-pedido' data-idx='${p.id || idx}' style='background:#388e3c;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;margin-right:6px;'>Aceptar</button>
+              <button class='rechazar-pedido' data-idx='${p.id || idx}' style='background:#e53935;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;'>Rechazar</button>
+            ` : `<span style='color:#888;'>Sin acciones</span>`}
+          </td>
+        </tr>
+      `).join('');
+      // Mostrar cantidad filtrada
+      modal.querySelector('#cantidad-filtrada-pedidos').textContent = `Pedidos en este día: ${filtrados.length}`;
+      // Acciones aceptar/rechazar
+      tbody.querySelectorAll('.aceptar-pedido').forEach(btn => {
+        btn.onclick = function() {
+          const idx = this.closest('tr').dataset.idx;
+          let pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+          let pedido = filtrados[idx];
+          if (pedido) pedido.estado = 'Aceptado';
+          // Actualizar en pedidos globales
+          let globalIdx = pedidos.findIndex(p => p.fecha === pedido.fecha && p.cliente === pedido.cliente && p.total === pedido.total);
+          if (globalIdx !== -1) pedidos[globalIdx].estado = 'Aceptado';
+          localStorage.setItem('pedidos', JSON.stringify(pedidos));
+          renderPedidosFiltrados(fechaStr);
+        };
+      });
+      tbody.querySelectorAll('.rechazar-pedido').forEach(btn => {
+        btn.onclick = function() {
+          const idx = this.closest('tr').dataset.idx;
+          let pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+          let pedido = filtrados[idx];
+          if (pedido) pedido.estado = 'Rechazado';
+          let globalIdx = pedidos.findIndex(p => p.fecha === pedido.fecha && p.cliente === pedido.cliente && p.total === pedido.total);
+          if (globalIdx !== -1) pedidos[globalIdx].estado = 'Rechazado';
+          localStorage.setItem('pedidos', JSON.stringify(pedidos));
+          renderPedidosFiltrados(fechaStr);
+        };
+      });
+    }
+
+    // Inicializar con la fecha de hoy
+    renderPedidosFiltrados(fechaDefault);
+    // Cambiar filtro de fecha
+    modal.querySelector('#filtro-fecha-pedidos').onchange = function() {
+      renderPedidosFiltrados(this.value);
+    };
   }
 
   // --- ÚLTIMOS USUARIOS REGISTRADOS ---

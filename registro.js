@@ -29,12 +29,25 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
       
-      // Guardar cliente en array de clientes
+      // Guardar cliente en array de clientes y en la base de datos
       let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
       // Evitar duplicados por email
       if (!clientes.some(c => c.email === email)) {
         clientes.push({ nombre, email, password, rol: 'cliente' });
         localStorage.setItem('clientes', JSON.stringify(clientes));
+        // Guardar en la base de datos
+        fetch('https://pagina-web-wm0x.onrender.com/api/usuarios', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nombre, email, password, rol: 'cliente' })
+        }).then(async res => {
+          if (!res.ok) {
+            const data = await res.json();
+            alert(data.error || 'Error al registrar el cliente en la base de datos');
+          }
+        }).catch(() => {
+          alert('Error de conexión con el servidor.');
+        });
       }
       
       // Aquí podrías agregar código para guardar el usuario
