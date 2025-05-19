@@ -57,6 +57,13 @@ db.serialize(() => {
       db.run('INSERT INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, ?)', ['Administrador', 'admin@foodapp.com', hash, 'admin']);
     }
   });
+  // Admin 2
+  db.get('SELECT * FROM usuarios WHERE email = ?', ['admin2@foodapp.com'], async (err, row) => {
+    if (!row) {
+      const hash = await bcrypt.hash('admin456', 10);
+      db.run('INSERT INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, ?)', ['Administrador 2', 'admin2@foodapp.com', hash, 'admin']);
+    }
+  });
   // Restaurante
   db.get('SELECT * FROM usuarios WHERE email = ?', ['restaurante@foodapp.com'], async (err, row) => {
     if (!row) {
