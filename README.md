@@ -14,7 +14,7 @@ Este es un backend sencillo para FoodApp usando Node.js, Express y SQLite.
    node server.js
    ```
 
-El backend estará disponible en http://localhost:3001
+El backend estará disponible en https://pagina-web-wm0x.onrender.com
 
 ## Endpoints principales
 - POST /api/usuarios — Registro de usuario

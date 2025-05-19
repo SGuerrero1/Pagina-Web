@@ -48,6 +48,22 @@ db.serialize(() => {
     fecha TEXT,
     total REAL
   )`);
+
+  // --- USUARIOS POR DEFECTO ---
+  // Admin
+  db.get('SELECT * FROM usuarios WHERE email = ?', ['admin@foodapp.com'], async (err, row) => {
+    if (!row) {
+      const hash = await bcrypt.hash('admin123', 10);
+      db.run('INSERT INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, ?)', ['Administrador', 'admin@foodapp.com', hash, 'admin']);
+    }
+  });
+  // Restaurante
+  db.get('SELECT * FROM usuarios WHERE email = ?', ['restaurante@foodapp.com'], async (err, row) => {
+    if (!row) {
+      const hash = await bcrypt.hash('rest123', 10);
+      db.run('INSERT INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, ?)', ['Restaurante Demo', 'restaurante@foodapp.com', hash, 'restaurante']);
+    }
+  });
 });
 
 // Configura aquí tus credenciales de correo (reemplaza por variables de entorno en producción)
