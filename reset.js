@@ -18,7 +18,7 @@ document.getElementById('reset-form').onsubmit = async function(ev) {
   }
   // Llamada al backend para cambiar la contraseña
   try {
-    const res = await fetch('http://localhost:3001/api/cambiar', {
+    const res = await fetch('https://pagina-web-wm0x.onrender.com/api/cambiar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password: pass1 })

@@ -1,28 +1,28 @@
 document.addEventListener('DOMContentLoaded', function() {
   // --- DASHBOARD: DATOS EN VIVO DESDE LA BASE DE DATOS ---
   // Usuarios activos
-  fetch('http://localhost:3001/api/usuarios/activos')
+  fetch('https://pagina-web-wm0x.onrender.com/api/usuarios/activos')
     .then(r => r.json())
     .then(data => {
       const span = document.getElementById('usuarios-activos');
       if (span && data.total !== undefined) span.textContent = data.total;
     });
   // Platos disponibles
-  fetch('http://localhost:3001/api/platos/disponibles')
+  fetch('https://pagina-web-wm0x.onrender.com/api/platos/disponibles')
     .then(r => r.json())
     .then(data => {
       const span = document.getElementById('platos-disponibles');
       if (span && data.total !== undefined) span.textContent = data.total;
     });
   // Pedidos de hoy
-  fetch('http://localhost:3001/api/pedidos/hoy')
+  fetch('https://pagina-web-wm0x.onrender.com/api/pedidos/hoy')
     .then(r => r.json())
     .then(data => {
       const span = document.getElementById('pedidos-hoy');
       if (span && data.total !== undefined) span.textContent = data.total;
     });
   // Últimos usuarios registrados
-  fetch('http://localhost:3001/api/usuarios/ultimos')
+  fetch('https://pagina-web-wm0x.onrender.com/api/usuarios/ultimos')
     .then(r => r.json())
     .then(usuarios => {
       const tbody = document.querySelector('#tabla-ultimos-usuarios tbody');
@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   // Restaurantes recientes
-  fetch('http://localhost:3001/api/restaurantes/recientes')
+  fetch('https://pagina-web-wm0x.onrender.com/api/restaurantes/recientes')
     .then(r => r.json())
     .then(rests => {
       const tbody = document.querySelector('#tabla-restaurantes-recientes tbody');

@@ -87,7 +87,7 @@ app.post('/api/recuperar', (req, res) => {
   db.get('SELECT * FROM usuarios WHERE email = ?', [email], (err, user) => {
     if (err || !user) return res.status(400).json({ error: 'No existe ese usuario' });
     // Enlace de recuperación (puedes agregar un token seguro si lo deseas)
-    const resetUrl = `http://localhost:3000/reset.html?email=${encodeURIComponent(email)}`;
+    const resetUrl = `https://pagina-web-wm0x.onrender.com/reset.html?email=${encodeURIComponent(email)}`;
     const mailOptions = {
       from: `FoodApp <${process.env.EMAIL_USER}>`,
       to: email,
@@ -181,5 +181,5 @@ app.get('/api/restaurantes/recientes', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log('Servidor backend escuchando en http://localhost:' + PORT);
+  console.log('Servidor backend escuchando en ' + (process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`));
 });

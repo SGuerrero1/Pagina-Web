@@ -29,7 +29,7 @@ document.getElementById('form-registro').addEventListener('submit', async functi
   }
 
   try {
-    const res = await fetch('http://localhost:3001/api/usuarios', {
+    const res = await fetch('https://pagina-web-wm0x.onrender.com/api/usuarios', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nombre, email, password, rol })
@@ -56,7 +56,7 @@ document.getElementById('login-form').addEventListener('submit', async function(
   const errorDiv = document.getElementById('login-error');
 
   try {
-    const res = await fetch('http://localhost:3001/api/login', {
+    const res = await fetch('https://pagina-web-wm0x.onrender.com/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: username, password })
@@ -106,7 +106,7 @@ document.getElementById('forgot-form').onsubmit = async function(ev) {
   const email = document.getElementById('forgot-email').value.trim();
   const msg = document.getElementById('forgot-msg');
   try {
-    const res = await fetch('http://localhost:3001/api/recuperar', {
+    const res = await fetch('https://pagina-web-wm0x.onrender.com/api/recuperar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })
