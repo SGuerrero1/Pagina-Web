@@ -114,7 +114,7 @@ document.getElementById('forgot-form').onsubmit = async function(ev) {
     const data = await res.json();
     if (res.ok) {
       msg.style.color = '#388e3c';
-      msg.innerHTML = 'Se ha enviado un enlace de recuperación a tu correo (simulado). <br><a href="reset.html?email='+encodeURIComponent(email)+'" target="_blank" style="color:#ff5722;text-decoration:underline;">Cambiar contraseña</a>';
+      msg.innerHTML = 'Se ha enviado un enlace de recuperación a tu correo. <br><a href="reset.html?email='+encodeURIComponent(email)+'" target="_blank" style="color:#ff5722;text-decoration:underline;"></a>';
     } else {
       msg.style.color = '#e53935';
       msg.textContent = data.error || 'No se encontró ninguna cuenta con ese correo.';

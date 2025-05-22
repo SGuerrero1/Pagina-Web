@@ -110,12 +110,12 @@ app.post('/api/recuperar', (req, res) => {
   db.get('SELECT * FROM usuarios WHERE email = ?', [email], (err, user) => {
     if (err || !user) return res.status(400).json({ error: 'No existe ese usuario' });
     // Enlace de recuperación (puedes agregar un token seguro si lo deseas)
-    const resetUrl = `https://pagina-web-wm0x.onrender.com/reset.html?email=${encodeURIComponent(email)}`;
+    const resetUrl = `https://sguerrero1.github.io/Pagina-Web/reset.html?email=guerrerosantiago235%40gmail.com=${encodeURIComponent(email)}`;
     const mailOptions = {
       from: `FoodApp <${process.env.EMAIL_USER}>`,
       to: email,
       subject: 'Recuperación de contraseña - FoodApp',
-      html: `<p>Hola ${user.nombre},</p><p>Haz clic en el siguiente enlace para restablecer tu contraseña:</p><p><a href="${resetUrl}">${resetUrl}</a></p><p>Si no solicitaste este cambio, ignora este correo.</p>`
+      html: `<p>Hola ${user.nombre},</p><p>Haz clic en el siguiente enlace para restablecer tu contraseña: </p><p><a href="${resetUrl}">${resetUrl}</a></p><p>Si no solicitaste este cambio, ignora este correo.</p>`
     };
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {

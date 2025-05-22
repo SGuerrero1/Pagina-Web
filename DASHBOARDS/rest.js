@@ -322,55 +322,6 @@ document.addEventListener('DOMContentLoaded', function() {
     })();
     // On DOMContentLoaded, render Pedidos Recientes from localStorage
     renderPedidosRecientesTable();
-    // Encuesta de satisfacción no intrusiva
-    function mostrarEncuestaSatisfaccion(pedido) {
-      if (document.getElementById('encuesta-satisfaccion')) return;
-      const encuesta = document.createElement('div');
-      encuesta.id = 'encuesta-satisfaccion';
-      encuesta.style.position = 'fixed';
-      encuesta.style.bottom = '32px';
-      encuesta.style.right = '32px';
-      encuesta.style.background = '#fff';
-      encuesta.style.borderRadius = '12px';
-      encuesta.style.boxShadow = '0 4px 24px rgba(0,0,0,0.13)';
-      encuesta.style.padding = '22px 28px 18px 28px';
-      encuesta.style.zIndex = 9999;
-      encuesta.style.display = 'flex';
-      encuesta.style.flexDirection = 'column';
-      encuesta.style.alignItems = 'center';
-      encuesta.innerHTML = `
-        <span style='font-size:1.1em;font-weight:500;margin-bottom:10px;'>¿Cómo calificarías tu experiencia con este pedido?</span>
-        <div id='estrellas-encuesta' style='font-size:2.1em; color:#ffb400; margin-bottom:10px; cursor:pointer;'>
-          <span data-star='1'>&#9734;</span>
-          <span data-star='2'>&#9734;</span>
-          <span data-star='3'>&#9734;</span>
-          <span data-star='4'>&#9734;</span>
-          <span data-star='5'>&#9734;</span>
-        </div>
-        <button id='cerrar-encuesta' style='margin-top:4px;background:#ff5722;color:#fff;border:none;padding:6px 18px;border-radius:6px;font-size:1em;cursor:pointer;'>Cerrar</button>
-      `;
-      document.body.appendChild(encuesta);
-      let estrellas = encuesta.querySelectorAll('#estrellas-encuesta span');
-      estrellas.forEach(star => {
-        star.addEventListener('mouseenter', function() {
-          let val = parseInt(this.getAttribute('data-star'));
-          estrellas.forEach((s, i) => s.innerHTML = i < val ? '&#9733;' : '&#9734;');
-        });
-        star.addEventListener('mouseleave', function() {
-          estrellas.forEach(s => s.innerHTML = '&#9734;');
-        });
-        star.addEventListener('click', function() {
-          let val = parseInt(this.getAttribute('data-star'));
-          estrellas.forEach((s, i) => s.innerHTML = i < val ? '&#9733;' : '&#9734;');
-          encuesta.querySelector('span').textContent = `¡Gracias por tu calificación de ${val} estrella${val>1?'s':''}!`;
-          setTimeout(()=>{
-            encuesta.remove();
-          }, 1200);
-          // Aquí podrías guardar la calificación en localStorage o enviarla al backend si lo deseas
-        });
-      });
-      encuesta.querySelector('#cerrar-encuesta').onclick = () => encuesta.remove();
-    }
     // Sumar ingresos de hoy
     function sumarIngresoHoy(pedido) {
       // Buscar el elemento de ingresos hoy
