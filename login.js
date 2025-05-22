@@ -24,7 +24,7 @@ document.getElementById('form-registro').addEventListener('submit', async functi
   const rol = 'cliente';
 
   if (password !== confirmPassword) {
-    alert('Las contraseñas no coinciden.');
+    mostrarNotificacion('Las contraseñas no coinciden.', 'error');
     return;
   }
 
@@ -36,13 +36,13 @@ document.getElementById('form-registro').addEventListener('submit', async functi
     });
     const data = await res.json();
     if (res.ok) {
-      alert('Registro exitoso. Ahora puedes iniciar sesión.');
+      mostrarNotificacion('Registro exitoso. Ahora puedes iniciar sesión.', 'exito');
       this.reset();
     } else {
-      alert(data.error || 'Error al registrar usuario.');
+      mostrarNotificacion(data.error || 'Error al registrar usuario.', 'error');
     }
   } catch (err) {
-    alert('Error de conexión con el servidor.');
+    mostrarNotificacion('Error de conexión con el servidor.', 'error');
   }
 });
 

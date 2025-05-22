@@ -8,6 +8,11 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 </head>
 <body>
+    <!-- Botones de idioma y modo oscuro en la parte superior derecha -->
+    <div id="config-buttons-cliente" style="position:fixed;top:18px;right:24px;z-index:10001;display:flex;gap:12px;">
+        <button id="btn-idioma" style="padding:7px 18px;border-radius:8px;border:none;background:#2257ff;color:#fff;font-weight:500;cursor:pointer;">English</button>
+        <button id="btn-darkmode" style="padding:7px 18px;border-radius:8px;border:none;background:#222;color:#fff;font-weight:500;cursor:pointer;">🌙</button>
+    </div>
     <!-- Contenido del Dashboard (Cliente) -->
     <div class="dashboard client-dashboard" id="client-dashboard">
         <nav class="sidebar">
@@ -49,6 +54,8 @@
                 <div id="search-error" style="margin-top: 15px; color: red; font-weight: bold;"></div>
                 <!-- Los platos se cargarán dinámicamente aquí -->
             </div>
+            <!-- Encuesta de satisfacción: se renderiza aquí por JS si hay pendiente -->
+            <div id="encuesta-satisfaccion-cliente" style="margin-top:24px;"></div>
             <!-- Apartado de contacto -->
             <section class="contact-section" style="margin: 36px 0 0 0; padding: 18px 22px; background: #f0f7ff; border-radius: 10px; box-shadow: 0 2px 8px rgba(34,87,255,0.07);">
                 <h2 style="color:#2257ff; margin-top:0;">Contacto</h2>
@@ -114,6 +121,58 @@
                 window.location.href = '../index.html';
             });
         }
+
+        // --- CAMBIO DE IDIOMA Y MODO OSCURO ---
+        const traducciones = {
+            '¡Bienvenido, Cliente!': 'Welcome, Customer!',
+            'Menú': 'Menu',
+            'GPS': 'GPS',
+            'Carrito': 'Cart',
+            'Historial': 'History',
+            'Perfil': 'Profile',
+            'Cerrar Sesión': 'Logout',
+            'Inicio': 'Home',
+            '¿Qué es FoodApp?': 'What is FoodApp?',
+            'FoodApp es una plataforma digital que conecta a clientes y restaurantes, permitiéndote explorar menús, buscar tus platos favoritos, realizar pedidos, gestionar tu perfil y mucho más, todo de forma rápida y sencilla.': 'FoodApp is a digital platform that connects customers and restaurants, allowing you to explore menus, search for your favorite dishes, place orders, manage your profile, and much more, all quickly and easily.',
+            'Buscar platos por nombre...': 'Search dishes by name...',
+            'Platos Recomendados': 'Recommended Dishes',
+            'Contacto': 'Contact',
+            '¿Tienes dudas o necesitas ayuda? Contáctanos por WhatsApp:': 'Do you have questions or need help? Contact us via WhatsApp:',
+            // Reverso para traducción bidireccional
+            'Welcome, Customer!': '¡Bienvenido, Cliente!',
+            'Menu': 'Menú',
+            'Cart': 'Carrito',
+            'History': 'Historial',
+            'Profile': 'Perfil',
+            'Logout': 'Cerrar Sesión',
+            'Home': 'Inicio',
+            'What is FoodApp?': '¿Qué es FoodApp?',
+            'FoodApp is a digital platform that connects customers and restaurants, allowing you to explore menus, search for your favorite dishes, place orders, manage your profile, and much more, all quickly and easily.': 'FoodApp es una plataforma digital que conecta a clientes y restaurantes, permitiéndote explorar menús, buscar tus platos favoritos, realizar pedidos, gestionar tu perfil y mucho más, todo de forma rápida y sencilla.',
+            'Search dishes by name...': 'Buscar platos por nombre...',
+            'Recommended Dishes': 'Platos Recomendados',
+            'Contact': 'Contacto',
+            'Do you have questions or need help? Contact us via WhatsApp:': '¿Tienes dudas o necesitas ayuda? Contáctanos por WhatsApp:'
+        };
+        let idiomaIngles = false;
+        document.getElementById('btn-idioma').onclick = function() {
+            idiomaIngles = !idiomaIngles;
+            this.textContent = idiomaIngles ? 'Español' : 'English';
+            document.querySelectorAll('h1,h2,h3,label,button,a,p,option,span,th,td, input[placeholder]').forEach(el => {
+                if (el.placeholder && traducciones[el.placeholder]) {
+                    el.placeholder = traducciones[el.placeholder];
+                }
+                const txt = el.textContent.trim();
+                if (traducciones[txt]) {
+                    el.textContent = traducciones[txt];
+                }
+            });
+        };
+        let darkMode = document.body.classList.contains('modo-oscuro');
+        document.getElementById('btn-darkmode').onclick = function() {
+            darkMode = !darkMode;
+            document.body.classList.toggle('modo-oscuro', darkMode);
+            this.textContent = darkMode ? '☀️' : '🌙';
+        };
     </script>
 </body>
 </html>

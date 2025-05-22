@@ -8,7 +8,6 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Contenido del Dashboard (Restaurante) -->
     <div class="dashboard restaurant-dashboard" id="restaurant-dashboard">
         <nav class="sidebar">
             <div class="logo">
@@ -16,54 +15,56 @@
                 <h2>FoodApp</h2>
             </div>
             <ul class="menu">
-                <li class="active"><a href="#"><i class="fas fa-home"></i> Inicio</a></li>
-                <li><a href="#" class="feature-link"><i class="fas fa-hamburger"></i> Platos</a></li>
-                <li><a href="#" class="feature-link"><i class="fas fa-plus-circle"></i> Nuevo Plato</a></li>
-                <li><a href="#" class="feature-link"><i class="fas fa-clipboard-list"></i> Pedidos</a></li>
-                <li><a href="#" class="feature-link"><i class="fas fa-map-marker-alt"></i> GPS</a></li>
-                <li><a href="#" class="feature-link"><i class="fas fa-cog"></i> Configuración</a></li>
-                <li><a href="#" id="restaurant-logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                <li class="active"><a href="#" class="menu-link"><i class="fas fa-home"></i> <span>Inicio</span></a></li>
+                <li><a href="#" class="menu-link"><i class="fas fa-hamburger"></i> <span>Platos</span></a></li>
+                <li><a href="#" class="menu-link"><i class="fas fa-plus-circle"></i> <span>Nuevo Plato</span></a></li>
+                <li><a href="#" class="menu-link"><i class="fas fa-clipboard-list"></i> <span>Pedidos</span></a></li>
+                <li><a href="#" class="menu-link"><i class="fas fa-map-marker-alt"></i> <span>GPS</span></a></li>
+                <li><a href="#" class="menu-link"><i class="fas fa-cog"></i> <span>Configuración</span></a></li>
+                <li><a href="#" id="restaurant-logout"><i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span></a></li>
             </ul>
         </nav>
         <main class="content">
-            <header>
-                <h1>Panel de Restaurante</h1>
+            <header class="sticky-header">
+                <div class="header-left">
+                    <h1>Panel de Restaurante</h1>
+                </div>
                 <div class="user-info">
                     <span>Restaurante</span>
                     <i class="fas fa-user-circle"></i>
                 </div>
             </header>
-            <div class="dashboard-cards">
+            <section class="dashboard-cards-grid">
                 <div class="card">
                     <div class="card-icon"><i class="fas fa-clipboard-list"></i></div>
                     <div class="card-info">
                         <h3>Pedidos Pendientes</h3>
-                        <p>8 pedidos</p>
+                        <p id="pedidos-pendientes">0 pedidos</p>
                     </div>
                 </div>
                 <div class="card">
                     <div class="card-icon"><i class="fas fa-hamburger"></i></div>
                     <div class="card-info">
                         <h3>Platos Activos</h3>
-                        <p>24 platos</p>
+                        <p id="platos-activos">0 platos</p>
                     </div>
                 </div>
                 <div class="card">
                     <div class="card-icon"><i class="fas fa-star"></i></div>
                     <div class="card-info">
                         <h3>Valoración</h3>
-                        <p>4.8/5.0</p>
+                        <p id="valoracion-rest">-</p>
                     </div>
                 </div>
                 <div class="card">
                     <div class="card-icon"><i class="fas fa-dollar-sign"></i></div>
                     <div class="card-info">
                         <h3>Ingresos Hoy</h3>
-                        <p>$436.50</p>
+                        <p id="ingresos-hoy">$0.00</p>
                     </div>
                 </div>
-            </div>
-            <div class="data-tables">
+            </section>
+            <section class="data-tables">
                 <div class="table-container">
                     <h2>Pedidos Recientes</h2>
                     <table id="tabla-pedidos-recientes">
@@ -82,19 +83,101 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
-            <div class="restaurant-actions">
+            </section>
+            <!-- Apartado de ubicaciones de clientes -->
+            <section class="data-tables">
+                <div class="table-container">
+                    <h2>Ubicaciones de Clientes</h2>
+                    <table id="tabla-ubicaciones-clientes-rest">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Correo</th>
+                                <th>Latitud</th>
+                                <th>Longitud</th>
+                                <th>Fecha</th>
+                                <th>Mapa</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- JS insertará aquí las ubicaciones -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            <section class="restaurant-actions">
                 <h2>Acciones Rápidas</h2>
                 <div class="action-buttons">
                     <button class="btn-secondary feature-link"><i class="fas fa-plus-circle"></i> Añadir Plato</button>
                     <button class="btn-secondary feature-link"><i class="fas fa-cog"></i> Configurar Precios</button>
                     <button class="btn-secondary feature-link"><i class="fas fa-map-marker-alt"></i> Ver Mapa</button>
                 </div>
-            </div>
+            </section>
         </main>
-    </div> 
+    </div>
+    <div id="toast-container" style="position:fixed;top:32px;right:32px;z-index:9999;display:flex;flex-direction:column;gap:12px;"></div>
     <script src="script.js"></script>
     <script src="rest.js"></script>
+    <script>
+  // --- CAMBIO DE IDIOMA Y MODO OSCURO ---
+  const traducciones = {
+    'Panel de Restaurante': 'Restaurant Panel',
+    'Restaurante': 'Restaurant',
+    'Platos': 'Dishes',
+    'Nuevo Plato': 'New Dish',
+    'Pedidos': 'Orders',
+    'GPS': 'GPS',
+    'Configuración': 'Settings',
+    'Cerrar Sesión': 'Logout',
+    'Inicio': 'Home',
+    'Pedidos Pendientes': 'Pending Orders',
+    'Platos Activos': 'Active Dishes',
+    'Valoración': 'Rating',
+    'Ingresos Hoy': 'Today\'s Income',
+    'Acciones Rápidas': 'Quick Actions',
+    'Añadir Plato': 'Add Dish',
+    'Configurar Precios': 'Set Prices',
+    'Ver Mapa': 'View Map',
+    'Pedidos Recientes': 'Recent Orders',
+    'Cliente': 'Customer',
+    'Total': 'Total',
+    'Estado': 'Status',
+    'Acciones': 'Actions',
+    'Sin acciones': 'No actions',
+    'Entregado': 'Delivered',
+    'Pendiente': 'Pending',
+    'Aceptado': 'Accepted',
+    'Rechazado': 'Rejected',
+    // Reverso para traducción bidireccional
+    'Restaurant Panel': 'Panel de Restaurante',
+    'Restaurant': 'Restaurante',
+    'Dishes': 'Platos',
+    'New Dish': 'Nuevo Plato',
+    'Orders': 'Pedidos',
+    'Settings': 'Configuración',
+    'Logout': 'Cerrar Sesión',
+    'Home': 'Inicio',
+    'Pending Orders': 'Pedidos Pendientes',
+    'Active Dishes': 'Platos Activos',
+    'Rating': 'Valoración',
+    "Today's Income": 'Ingresos Hoy',
+    'Quick Actions': 'Acciones Rápidas',
+    'Add Dish': 'Añadir Plato',
+    'Set Prices': 'Configurar Precios',
+    'View Map': 'Ver Mapa',
+    'Recent Orders': 'Pedidos Recientes',
+    'Customer': 'Cliente',
+    'Status': 'Estado',
+    'Actions': 'Acciones',
+    'No actions': 'Sin acciones',
+    'Delivered': 'Entregado',
+    'Pending': 'Pendiente',
+    'Accepted': 'Aceptado',
+    'Rejected': 'Rechazado'
+  };
+  let idiomaIngles = false;
+  let darkMode = false;
+  </script>
     <script>
         // Función para cerrar sesión
         const logoutButton = document.getElementById('restaurant-logout') || document.getElementById('restaurante-logout');
@@ -368,8 +451,12 @@
                     let platos = JSON.parse(localStorage.getItem('platos')) || [];
                     modal.innerHTML = `
                         <div style="background:#fff;padding:36px 28px 28px 28px;border-radius:22px;min-width:350px;max-width:98vw;max-height:92vh;overflow:auto;position:relative;box-shadow:0 10px 40px rgba(34,87,255,0.13);font-family:'Segoe UI',Arial,sans-serif;">
-                            <button id="close-config-modal-rest" style="position:absolute;top:18px;right:18px;font-size:26px;background:none;border:none;cursor:pointer;color:#ff5722;transition:color 0.2s;">&times;</button>
-                            <h2 style="margin-bottom:24px;text-align:center;font-size:2em;color:#ff5722;letter-spacing:1px;">Configuración Restaurante</h2>
+                            <div style='display:flex;gap:12px;justify-content:flex-end;margin-bottom:12px;'>
+                                <button id="btn-idioma" style="padding:7px 18px;border-radius:8px;border:none;background:#2257ff;color:#fff;font-weight:500;cursor:pointer;">English</button>
+                                <button id="btn-darkmode" style="padding:7px 18px;border-radius:8px;border:none;background:#222;color:#fff;font-weight:500;cursor:pointer;">🌙</button>
+                            </div>
+                            <button id='close-config-modal-rest' style='position:absolute;top:18px;right:18px;font-size:26px;background:none;border:none;cursor:pointer;color:#ff5722;transition:color 0.2s;'>&times;</button>
+                            <h2 style='margin-bottom:24px;text-align:center;font-size:2em;color:#ff5722;letter-spacing:1px;'>Configuración Restaurante</h2>
                             <form id="form-rest-perfil" style="margin-bottom:24px;">
                                 <div style='display:flex;flex-direction:column;align-items:center;margin-bottom:18px;'>
                                     <label for='rest-img-input' style='cursor:pointer;'>
@@ -457,7 +544,7 @@
                             userImg.src = rest.img;
                         }
                         modal.remove();
-                        alert('Perfil actualizado correctamente.');
+                        mostrarNotificacion('Perfil actualizado correctamente.', 'exito');
                     };
                     // Guardar cambios de platos
                     modal.querySelector('#guardar-platos').onclick = function() {
@@ -468,7 +555,7 @@
                             platos[idx].precio = fila.querySelector('.edit-precio').value.trim();
                         });
                         localStorage.setItem('platos', JSON.stringify(platos));
-                        alert('Cambios de platos guardados.');
+                        mostrarNotificacion('Cambios de platos guardados.', 'exito');
                     };
                     // Eliminar plato
                     modal.querySelectorAll('.eliminar-plato').forEach(btn => {
@@ -491,6 +578,23 @@
                             localStorage.removeItem('userRole');
                             window.location.href = '../login_page.html';
                         }
+                    };
+                    // Enlaza los botones de idioma y modo oscuro
+                    modal.querySelector('#btn-idioma').onclick = function() {
+                        idiomaIngles = !idiomaIngles;
+                        this.textContent = idiomaIngles ? 'Español' : 'English';
+                        document.querySelectorAll('h1,h2,h3,label,button,a,p,option,span,th,td').forEach(el => {
+                            const txt = el.textContent.trim();
+                            if (traducciones[txt]) {
+                                el.textContent = traducciones[txt];
+                            }
+                        });
+                    };
+                    darkMode = document.body.classList.contains('modo-oscuro');
+                    modal.querySelector('#btn-darkmode').onclick = function() {
+                        darkMode = !darkMode;
+                        document.body.classList.toggle('modo-oscuro', darkMode);
+                        this.textContent = darkMode ? '☀️' : '🌙';
                     };
                 };
             }
@@ -571,7 +675,11 @@
                 let rest = restaurantes[0] || {nombre:'Restaurante', email:'', password:'', img:''};
                 let platos = JSON.parse(localStorage.getItem('platos')) || [];
                 modal.innerHTML = `
-                    <div style=\"background:#fff;padding:36px 28px 28px 28px;border-radius:22px;min-width:350px;max-width:98vw;max-height:92vh;overflow:auto;position:relative;box-shadow:0 10px 40px rgba(34,87,255,0.13);font-family:'Segoe UI',Arial,sans-serif;\">
+                    <div style="background:#fff;padding:36px 28px 28px 28px;border-radius:22px;min-width:350px;max-width:98vw;max-height:92vh;overflow:auto;position:relative;box-shadow:0 10px 40px rgba(34,87,255,0.13);font-family:'Segoe UI',Arial,sans-serif;">
+                        <div style='display:flex;gap:12px;justify-content:flex-end;margin-bottom:12px;'>
+                            <button id="btn-idioma" style="padding:7px 18px;border-radius:8px;border:none;background:#2257ff;color:#fff;font-weight:500;cursor:pointer;">English</button>
+                            <button id="btn-darkmode" style="padding:7px 18px;border-radius:8px;border:none;background:#222;color:#fff;font-weight:500;cursor:pointer;">🌙</button>
+                        </div>
                         <button id='close-config-modal-rest' style='position:absolute;top:18px;right:18px;font-size:26px;background:none;border:none;cursor:pointer;color:#ff5722;transition:color 0.2s;'>&times;</button>
                         <h2 style='margin-bottom:24px;text-align:center;font-size:2em;color:#ff5722;letter-spacing:1px;'>Configuración Restaurante</h2>
                         <form id='form-rest-perfil' style='margin-bottom:24px;'>
@@ -661,7 +769,7 @@
                         userImg.src = rest.img;
                     }
                     modal.remove();
-                    alert('Perfil actualizado correctamente.');
+                    mostrarNotificacion('Perfil actualizado correctamente.', 'exito');
                 };
                 // Guardar cambios de platos
                 modal.querySelector('#guardar-platos').onclick = function() {
@@ -672,7 +780,7 @@
                         platos[idx].precio = fila.querySelector('.edit-precio').value.trim();
                     });
                     localStorage.setItem('platos', JSON.stringify(platos));
-                    alert('Cambios de platos guardados.');
+                    mostrarNotificacion('Cambios de platos guardados.', 'exito');
                 };
                 // Eliminar plato
                 modal.querySelectorAll('.eliminar-plato').forEach(btn => {
@@ -696,8 +804,54 @@
                         window.location.href = '../index.html';
                     }
                 };
+                // Enlaza los botones de idioma y modo oscuro
+                modal.querySelector('#btn-idioma').onclick = function() {
+                    idiomaIngles = !idiomaIngles;
+                    this.textContent = idiomaIngles ? 'Español' : 'English';
+                    document.querySelectorAll('h1,h2,h3,label,button,a,p,option,span,th,td').forEach(el => {
+                        const txt = el.textContent.trim();
+                        if (traducciones[txt]) {
+                            el.textContent = traducciones[txt];
+                        }
+                    });
+                };
+                darkMode = document.body.classList.contains('modo-oscuro');
+                modal.querySelector('#btn-darkmode').onclick = function() {
+                    darkMode = !darkMode;
+                    document.body.classList.toggle('modo-oscuro', darkMode);
+                    this.textContent = darkMode ? '☀️' : '🌙';
+                };
             };
         }
+        // Mostrar ubicaciones de clientes en la tabla
+        document.addEventListener('DOMContentLoaded', function() {
+            const tbody = document.querySelector('#tabla-ubicaciones-clientes-rest tbody');
+            if (!tbody) return;
+            let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
+            let ubicaciones = [];
+            clientes.forEach(c => {
+                const userKey = c.email;
+                const ubic = localStorage.getItem('ubicacionCliente_' + userKey);
+                if (ubic) {
+                    const u = JSON.parse(ubic);
+                    ubicaciones.push({ nombre: c.nombre, email: c.email, lat: u.lat, lon: u.lon, fecha: u.fecha });
+                }
+            });
+            if (ubicaciones.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="color:#888;text-align:center;padding:18px;">No hay ubicaciones enviadas.</td></tr>';
+            } else {
+                tbody.innerHTML = ubicaciones.map(u => `
+                    <tr>
+                        <td>${u.nombre}</td>
+                        <td>${u.email}</td>
+                        <td>${u.lat != null ? u.lat.toFixed(5) : '-'}</td>
+                        <td>${u.lon != null ? u.lon.toFixed(5) : '-'}</td>
+                        <td>${u.fecha ? new Date(u.fecha).toLocaleString() : '-'}</td>
+                        <td>${u.lat && u.lon ? `<a href="https://www.google.com/maps?q=${u.lat},${u.lon}" target="_blank" style="color:#2257ff;text-decoration:underline;">Ver en mapa</a>` : '-'}</td>
+                    </tr>
+                `).join('');
+            }
+        });
     </script>
 </body>
 </html>

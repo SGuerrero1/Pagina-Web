@@ -16,6 +16,72 @@ body {
   background-position: center;
 }
 
+body.modo-oscuro {
+  background-color: #181a1b !important;
+  background-image: none !important;
+  color: #f1f1f1;
+}
+
+body.modo-oscuro .login-container {
+  background-color: #23272b;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+}
+
+body.modo-oscuro .left-panel {
+  background-color: #23272b;
+  color: #f1f1f1;
+}
+
+body.modo-oscuro .right-panel {
+  background-color: #23272b;
+  color: #f1f1f1;
+}
+
+body.modo-oscuro input,
+body.modo-oscuro select,
+body.modo-oscuro textarea {
+  background: #23272b;
+  color: #f1f1f1;
+  border-color: #444;
+}
+
+body.modo-oscuro .form-control:focus {
+  border-color: #ffb347;
+}
+
+body.modo-oscuro .register-btn,
+body.modo-oscuro .login-btn {
+  background: #333 !important;
+  color: #ffb347 !important;
+  border-color: #ffb347 !important;
+}
+
+body.modo-oscuro .register-btn:hover,
+body.modo-oscuro .login-btn:hover {
+  background: #ffb347 !important;
+  color: #23272b !important;
+}
+
+body.modo-oscuro .form-container {
+  background: #23272b;
+}
+
+body.modo-oscuro .checkbox-container {
+  color: #f1f1f1;
+}
+
+body.modo-oscuro .checkmark {
+  background: #444;
+}
+
+body.modo-oscuro .checkbox-container input:checked ~ .checkmark {
+  background-color: #ffb347;
+}
+
+body.modo-oscuro .error-message {
+  color: #ffb347;
+}
+
 /* Contenedor principal de login */
 .login-container {
   display: flex;

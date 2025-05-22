@@ -9,6 +9,10 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 </head>
 <body>
+  <div id="config-buttons-admin" style="position:fixed;top:18px;right:24px;z-index:10001;display:flex;gap:12px;">
+    <button id="btn-idioma" style="padding:7px 18px;border-radius:8px;border:none;background:#2257ff;color:#fff;font-weight:500;cursor:pointer;">English</button>
+    <button id="btn-darkmode" style="padding:7px 18px;border-radius:8px;border:none;background:#222;color:#fff;font-weight:500;cursor:pointer;">🌙</button>
+  </div>
     <!-- Contenido del Dashboard (Administrador) -->
     <div class="dashboard admin-dashboard" id="admin-dashboard">
         <nav class="sidebar">
@@ -89,9 +93,30 @@
                         </tbody>
                     </table>
                 </div>
+                <!-- Apartado de ubicaciones de clientes -->
+                <div class="table-container modern-table-container">
+                    <h2>Ubicaciones de Clientes</h2>
+                    <table class="modern-table" id="tabla-ubicaciones-clientes">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Correo</th>
+                                <th>Latitud</th>
+                                <th>Longitud</th>
+                                <th>Fecha</th>
+                                <th>Mapa</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- JS insertará aquí las ubicaciones -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <!-- Contenedor para modal de ubicaciones de restaurantes -->
             <div id="modal-restaurantes" style="display:none;"></div>
+            <!-- Notificaciones toast -->
+            <div id="toast-container" style="position:fixed;top:32px;right:32px;z-index:9999;display:flex;flex-direction:column;gap:12px;"></div>
         </main>
     </div>
 
@@ -208,6 +233,94 @@
           return;
         }
         */
+        // --- CAMBIO DE IDIOMA Y MODO OSCURO ---
+        const traducciones = {
+            'Panel de Administrador': 'Admin Panel',
+            'Usuarios': 'Users',
+            'Restaurantes': 'Restaurants',
+            'Platos': 'Dishes',
+            'Estadísticas': 'Statistics',
+            'Configuración': 'Settings',
+            'Cerrar Sesión': 'Logout',
+            'Inicio': 'Home',
+            'Pedidos': 'Orders',
+            'Ver Pedidos': 'View Orders',
+            'Últimos Usuarios Registrados': 'Latest Registered Users',
+            'Usuario': 'User',
+            'Correo': 'Email',
+            'Fecha': 'Date',
+            'Restaurantes Recientes': 'Recent Restaurants',
+            'Restaurante': 'Restaurant',
+            'Calificación': 'Rating',
+            'Platos disponibles': 'Available Dishes',
+            'activos': 'active',
+            'hoy': 'today',
+            'disponibles': 'available',
+            'Pedidos Hoy': 'Orders Today',
+            'Disponibles': 'Available',
+            'Activos': 'Active',
+            // Reverso para traducción bidireccional
+            'Admin Panel': 'Panel de Administrador',
+            'Users': 'Usuarios',
+            'Restaurants': 'Restaurantes',
+            'Dishes': 'Platos',
+            'Statistics': 'Estadísticas',
+            'Settings': 'Configuración',
+            'Logout': 'Cerrar Sesión',
+            'Home': 'Inicio',
+            'Orders': 'Pedidos',
+            'Orders Today': 'Pedidos Hoy',
+            'Available': 'Disponibles',
+            'Active': 'Activos',
+            'Latest Registered Users': 'Últimos Usuarios Registrados',
+            'Recent Restaurants': 'Restaurantes Recientes'
+        };
+        let idiomaIngles = false;
+        document.getElementById('btn-idioma').onclick = function() {
+            idiomaIngles = !idiomaIngles;
+            this.textContent = idiomaIngles ? 'Español' : 'English';
+            document.querySelectorAll('h1,h2,h3,label,button,a,p,option,span,th,td').forEach(el => {
+                const txt = el.textContent.trim();
+                if (traducciones[txt]) {
+                    el.textContent = traducciones[txt];
+                }
+            });
+        };
+        let darkMode = document.body.classList.contains('modo-oscuro');
+        document.getElementById('btn-darkmode').onclick = function() {
+            darkMode = !darkMode;
+            document.body.classList.toggle('modo-oscuro', darkMode);
+            this.textContent = darkMode ? '☀️' : '🌙';
+        };
+        // Mostrar ubicaciones de clientes en la tabla
+        document.addEventListener('DOMContentLoaded', function() {
+            const tbody = document.querySelector('#tabla-ubicaciones-clientes tbody');
+            if (!tbody) return;
+            let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
+            let ubicaciones = [];
+            clientes.forEach(c => {
+                const userKey = c.email;
+                const ubic = localStorage.getItem('ubicacionCliente_' + userKey);
+                if (ubic) {
+                    const u = JSON.parse(ubic);
+                    ubicaciones.push({ nombre: c.nombre, email: c.email, lat: u.lat, lon: u.lon, fecha: u.fecha });
+                }
+            });
+            if (ubicaciones.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="color:#888;text-align:center;padding:18px;">No hay ubicaciones enviadas.</td></tr>';
+            } else {
+                tbody.innerHTML = ubicaciones.map(u => `
+                    <tr>
+                        <td>${u.nombre}</td>
+                        <td>${u.email}</td>
+                        <td>${u.lat != null ? u.lat.toFixed(5) : '-'}</td>
+                        <td>${u.lon != null ? u.lon.toFixed(5) : '-'}</td>
+                        <td>${u.fecha ? new Date(u.fecha).toLocaleString() : '-'}</td>
+                        <td>${u.lat && u.lon ? `<a href="https://www.google.com/maps?q=${u.lat},${u.lon}" target="_blank" style="color:#2257ff;text-decoration:underline;">Ver en mapa</a>` : '-'}</td>
+                    </tr>
+                `).join('');
+            }
+        });
     </script>
 </body>
 </html>

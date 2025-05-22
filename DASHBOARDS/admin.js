@@ -359,7 +359,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
         let restaurantes = JSON.parse(localStorage.getItem('restaurantes')) || [];
         // Admin fijo no editable
-        if (idx === 0) return alert('No se puede editar el Admin fijo.');
+        if (idx === 0) return mostrarNotificacion('No se puede editar el Admin fijo.', 'error');
         if (idx > 0 && idx <= admins.length) {
           // Editar admin
           const a = admins[idx-1];
@@ -416,7 +416,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
         let restaurantes = JSON.parse(localStorage.getItem('restaurantes')) || [];
         // Admin fijo no eliminable
-        if (idx === 0) return alert('No se puede eliminar el Admin fijo.');
+        if (idx === 0) return mostrarNotificacion('No se puede eliminar el Admin fijo.', 'error');
         if (idx > 0 && idx <= admins.length) {
           // Eliminar admin
           if (confirm('¿Seguro que deseas eliminar este admin?')) {
@@ -490,7 +490,7 @@ document.addEventListener('DOMContentLoaded', function() {
         this.textContent = 'Guardar';
         this.onclick = function() {
           const nuevaPass = input.value.trim();
-          if (!nuevaPass) { alert('La contraseña no puede estar vacía.'); return; }
+          if (!nuevaPass) { mostrarNotificacion('La contraseña no puede estar vacía.', 'error'); return; }
           // Actualizar en localStorage según tipo
           let admins = JSON.parse(localStorage.getItem('admins')) || [];
           let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
@@ -498,7 +498,7 @@ document.addEventListener('DOMContentLoaded', function() {
           if (idx == 0) {
             // Admin fijo
             // No se puede cambiar en localStorage, solo en memoria
-            alert('No se puede cambiar la contraseña del Admin fijo.');
+            mostrarNotificacion('No se puede cambiar la contraseña del Admin fijo.', 'error');
           } else if (idx <= admins.length) {
             admins[idx-1].password = nuevaPass;
             localStorage.setItem('admins', JSON.stringify(admins));
@@ -621,11 +621,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         if (!res.ok) {
           const data = await res.json();
-          alert(data.error || 'Error al registrar admin en la base de datos');
+          mostrarNotificacion(data.error || 'Error al registrar admin en la base de datos', 'error');
           return;
         }
       } catch (err) {
-        alert('Error de conexión con el servidor.');
+        mostrarNotificacion('Error de conexión con el servidor.', 'error');
         return;
       }
       admins.push({ nombre, email, password });
@@ -646,11 +646,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         if (!res.ok) {
           const data = await res.json();
-          alert(data.error || 'Error al registrar restaurante en la base de datos');
+          mostrarNotificacion(data.error || 'Error al registrar restaurante en la base de datos', 'error');
           return;
         }
       } catch (err) {
-        alert('Error de conexión con el servidor.');
+        mostrarNotificacion('Error de conexión con el servidor.', 'error');
         return;
       }
       restaurantes.push({ nombre, email, password });
@@ -902,5 +902,72 @@ window.addEventListener('storage', function(e) {
       } catch {}
     }
     return originalSetItem.apply(this, arguments);
+  };
+})();
+
+function mostrarNotificacion(msg, tipo = 'info') {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.textContent = msg;
+  toast.style.padding = '16px 28px';
+  toast.style.borderRadius = '10px';
+  toast.style.fontSize = '1.08em';
+  toast.style.fontWeight = '500';
+  toast.style.boxShadow = '0 4px 18px rgba(0,0,0,0.13)';
+  toast.style.color = '#fff';
+  toast.style.opacity = '0.97';
+  toast.style.transition = 'transform 0.2s, opacity 0.2s';
+  toast.style.transform = 'translateY(-10px)';
+  if (tipo === 'exito' || tipo === 'success') {
+    toast.style.background = 'linear-gradient(90deg,#43e97b 0,#38f9d7 100%)';
+  } else if (tipo === 'error') {
+    toast.style.background = 'linear-gradient(90deg,#e53935 0,#ff6e40 100%)';
+  } else {
+    toast.style.background = 'linear-gradient(90deg,#ff9800 0,#ffb347 100%)';
+  }
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(-30px)';
+    setTimeout(() => toast.remove(), 400);
+  }, 2200);
+}
+
+// --- REAL-TIME PEDIDOS UPDATE ---
+function refreshPedidosAdminView() {
+  // If modal is open, refresh it
+  const modal = document.getElementById('pedidos-modal-admin');
+  if (modal && modal.style.display !== 'none') {
+    modal.remove();
+    mostrarModalPedidosAdmin();
+  }
+  // Update dashboard counters if present
+  const pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+  const pedidosHoySpan = document.getElementById('pedidos-hoy');
+  if (pedidosHoySpan) {
+    // Count only today's orders
+    const hoy = new Date();
+    const yyyy = hoy.getFullYear();
+    const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+    const dd = String(hoy.getDate()).padStart(2, '0');
+    const fechaHoy = `${yyyy}-${mm}-${dd}`;
+    const pedidosHoy = pedidos.filter(p => {
+      if (!p.fecha) return false;
+      let fechaPedido = new Date(p.fecha);
+      let f = `${fechaPedido.getFullYear()}-${String(fechaPedido.getMonth()+1).padStart(2,'0')}-${String(fechaPedido.getDate()).padStart(2,'0')}`;
+      return f === fechaHoy;
+    });
+    pedidosHoySpan.textContent = pedidosHoy.length;
+  }
+}
+window.addEventListener('storage', function(e) {
+  if (e.key === 'pedidos') refreshPedidosAdminView();
+});
+(function() {
+  const originalSetItemPedidos = localStorage.setItem;
+  localStorage.setItem = function(key, value) {
+    originalSetItemPedidos.apply(this, arguments);
+    if (key === 'pedidos') refreshPedidosAdminView();
   };
 })();

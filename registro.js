@@ -13,67 +13,64 @@ document.addEventListener('DOMContentLoaded', function() {
   // Manejar el envío del formulario de registro (si existe)
   const formRegistro = document.getElementById('form-registro');
   if (formRegistro) {
-    formRegistro.addEventListener('submit', function(e) {
+    let enviando = false;
+    formRegistro.addEventListener('submit', async function(e) {
       e.preventDefault();
-      
+      if (enviando) return;
+      enviando = true;
+      const submitBtn = this.querySelector('button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = true;
       // Obtener los valores del formulario
       const inputs = this.querySelectorAll('input:not([type="checkbox"])');
       const nombre = inputs[0].value;
       const email = inputs[1].value;
       const password = inputs[2].value;
       const confirmPassword = inputs[3].value;
-      
       // Validación simple
       if (password !== confirmPassword) {
-        alert('Las contraseñas no coinciden');
+        mostrarNotificacion('Las contraseñas no coinciden', 'error');
+        if (submitBtn) submitBtn.disabled = false;
+        enviando = false;
         return;
       }
-      
-      // Guardar cliente en array de clientes y en la base de datos
+      // Evitar duplicados por email en local
       let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
-      // Evitar duplicados por email
-      if (!clientes.some(c => c.email === email)) {
-        clientes.push({ nombre, email, password, rol: 'cliente' });
-        localStorage.setItem('clientes', JSON.stringify(clientes));
-        // Guardar en la base de datos
-        fetch('https://pagina-web-wm0x.onrender.com/api/usuarios', {
+      if (clientes.some(c => c.email === email)) {
+        mostrarNotificacion('Ya existe un usuario registrado con ese correo.', 'error');
+        if (submitBtn) submitBtn.disabled = false;
+        enviando = false;
+        return;
+      }
+      try {
+        const res = await fetch('https://pagina-web-wm0x.onrender.com/api/usuarios', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ nombre, email, password, rol: 'cliente' })
-        }).then(async res => {
-          if (!res.ok) {
-            const data = await res.json();
-            alert(data.error || 'Error al registrar el cliente en la base de datos');
-          }
-        }).catch(() => {
-          alert('Error de conexión con el servidor.');
         });
+        if (!res.ok) {
+          const data = await res.json();
+          mostrarNotificacion(data.error || 'Error al registrar el cliente en la base de datos', 'error');
+          if (submitBtn) submitBtn.disabled = false;
+          enviando = false;
+          return;
+        }
+        // Si fue exitoso, guardar en localStorage
+        clientes.push({ nombre, email, password, rol: 'cliente' });
+        localStorage.setItem('clientes', JSON.stringify(clientes));
+        mostrarNotificacion(`¡Registro exitoso! Bienvenido/a ${nombre} a FoodApp`, 'exito');
+        document.getElementById('registro-cliente').style.display = 'none';
+        document.getElementById('register-btn').style.display = 'block';
+        // Limpiar formulario
+        inputs.forEach(input => { input.value = ''; });
+        const checkbox = formRegistro.querySelector('input[type="checkbox"]');
+        if (checkbox) checkbox.checked = false;
+        const select = formRegistro.querySelector('select');
+        if (select) select.selectedIndex = 0;
+      } catch {
+        mostrarNotificacion('Error de conexión con el servidor.', 'error');
       }
-      
-      // Aquí podrías agregar código para guardar el usuario
-      // Por ahora, solo mostramos un mensaje y lo redirigimos
-      alert(`¡Registro exitoso! Bienvenido/a ${nombre} a FoodApp`);
-      
-      // Redirigir al login o a la página principal
-      document.getElementById('registro-cliente').style.display = 'none';
-      document.getElementById('register-btn').style.display = 'block';
-      
-      // Limpiar formulario
-      inputs.forEach(input => {
-        input.value = '';
-      });
-      
-      // Limpiar el checkbox
-      const checkbox = this.querySelector('input[type="checkbox"]');
-      if (checkbox) {
-        checkbox.checked = false;
-      }
-      
-      // Limpiar el select también
-      const select = this.querySelector('select');
-      if (select) {
-        select.selectedIndex = 0;
-      }
+      if (submitBtn) submitBtn.disabled = false;
+      enviando = false;
     });
   }
 });

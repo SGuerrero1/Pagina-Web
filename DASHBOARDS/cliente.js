@@ -2,11 +2,11 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     // Inicializa el carrito desde localStorage o vacío
-    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let cart = JSON.parse(localStorage.getItem('cartCliente')) || [];
 
     // Función para guardar el carrito
     function saveCart() {
-        localStorage.setItem('cart', JSON.stringify(cart));
+        localStorage.setItem('cartCliente', JSON.stringify(cart));
     }
 
     // Función para mostrar notificación simple
@@ -24,6 +24,35 @@ document.addEventListener('DOMContentLoaded', function() {
         notif.style.fontWeight = 'bold';
         document.body.appendChild(notif);
         setTimeout(() => notif.remove(), 1200);
+    }
+
+    function mostrarNotificacion(msg, tipo = 'info') {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.textContent = msg;
+        toast.style.padding = '16px 28px';
+        toast.style.borderRadius = '10px';
+        toast.style.fontSize = '1.08em';
+        toast.style.fontWeight = '500';
+        toast.style.boxShadow = '0 4px 18px rgba(0,0,0,0.13)';
+        toast.style.color = '#fff';
+        toast.style.opacity = '0.97';
+        toast.style.transition = 'transform 0.2s, opacity 0.2s';
+        toast.style.transform = 'translateY(-10px)';
+        if (tipo === 'exito' || tipo === 'success') {
+            toast.style.background = 'linear-gradient(90deg,#43e97b 0,#38f9d7 100%)';
+        } else if (tipo === 'error') {
+            toast.style.background = 'linear-gradient(90deg,#e53935 0,#ff6e40 100%)';
+        } else {
+            toast.style.background = 'linear-gradient(90deg,#ff9800 0,#ffb347 100%)';
+        }
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-30px)';
+            setTimeout(() => toast.remove(), 400);
+        }, 2200);
     }
 
     // Si el usuario hace click en el menú "Carrito", muestra el resumen
@@ -90,19 +119,47 @@ document.addEventListener('DOMContentLoaded', function() {
         // Finalizar compra
         const finalizarBtn = modal.querySelector('#finalizar-compra');
         if (finalizarBtn) {
-            finalizarBtn.onclick = function() {
-                // --- GUARDAR PEDIDO EN LOCALSTORAGE ---
+            finalizarBtn.onclick = async function() {
+                // --- GUARDAR PEDIDO EN BASE DE DATOS ---
                 const cliente = JSON.parse(localStorage.getItem('clienteRegistrado')) || {};
-                let pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
-                pedidos.push({
+                let usuarioId = null;
+                let restauranteId = null;
+                try {
+                    // Buscar usuario por email
+                    const resUser = await fetch('https://pagina-web-wm0x.onrender.com/api/usuarios?email=' + encodeURIComponent(cliente.email));
+                    const userData = await resUser.json();
+                    usuarioId = userData.id;
+                    // Buscar restaurante (asume 1 restaurante demo)
+                    const resRest = await fetch('https://pagina-web-wm0x.onrender.com/api/restaurantes');
+                    const restList = await resRest.json();
+                    restauranteId = restList[0]?.id || 1;
+                } catch {}
+                // Crear pedido
+                const pedido = {
+                    usuario_id: usuarioId,
+                    restaurante_id: restauranteId,
                     cliente: cliente.nombre || cliente.email || 'Cliente',
                     platos: cart.map(item => ({ nombre: item.nombre, cantidad: item.cantidad })),
-                    total: calcularTotal(),
+                    total: parseFloat(calcularTotal().replace(/[^\d\.]/g, '')),
                     estado: 'Pendiente',
                     fecha: new Date().toISOString()
-                });
+                };
+                try {
+                    await fetch('https://pagina-web-wm0x.onrender.com/api/pedidos', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(pedido)
+                    });
+                    mostrarNotificacion('¡Gracias por tu compra!', 'exito');
+                } catch {
+                    mostrarNotificacion('No se pudo registrar el pedido en la base de datos.', 'error');
+                }
+                // --- GUARDAR PEDIDO EN LOCALSTORAGE PARA DASHBOARDS ---
+                let pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+                pedidos.push(pedido);
                 localStorage.setItem('pedidos', JSON.stringify(pedidos));
-                alert('¡Gracias por tu compra!');
+                // Disparar evento de storage manualmente para otras pestañas
+                window.dispatchEvent(new Event('storage'));
                 guardarCompraEnHistorial([...cart], calcularTotal());
                 cart = [];
                 saveCart();
@@ -133,22 +190,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function mostrarPerfilModal() {
         let cliente = JSON.parse(localStorage.getItem('clienteRegistrado')) || {};
-        let modal = document.getElementById('perfil-modal');
-        if (!modal) {
-            modal = document.createElement('div');
-            modal.id = 'perfil-modal';
-            modal.style.position = 'fixed';
-            modal.style.top = '0';
-            modal.style.left = '0';
-            modal.style.width = '100vw';
-            modal.style.height = '100vh';
-            modal.style.background = 'rgba(0,0,0,0.4)';
-            modal.style.display = 'flex';
-            modal.style.alignItems = 'center';
-            modal.style.justifyContent = 'center';
-            modal.style.zIndex = 10000;
-            document.body.appendChild(modal);
-        }
+        let oldModal = document.getElementById('perfil-modal');
+        if (oldModal) oldModal.remove(); // Elimina el modal anterior si existe
+        let modal = document.createElement('div');
+        modal.id = 'perfil-modal';
+        modal.style.position = 'fixed';
+        modal.style.top = '0';
+        modal.style.left = '0';
+        modal.style.width = '100vw';
+        modal.style.height = '100vh';
+        modal.style.background = 'rgba(0,0,0,0.4)';
+        modal.style.display = 'flex';
+        modal.style.alignItems = 'center';
+        modal.style.justifyContent = 'center';
+        modal.style.zIndex = 10000;
+        document.body.appendChild(modal);
         modal.innerHTML = `
             <div style="background:#fff;padding:32px 24px;border-radius:12px;min-width:320px;max-width:90vw;max-height:80vh;overflow:auto;position:relative;">
                 <h2 style="margin-bottom:18px;">Editar Perfil</h2>
@@ -226,7 +282,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 userImg.src = cliente.img;
             }
             modal.remove();
-            alert('Perfil actualizado correctamente.');
+            mostrarNotificacion('Perfil actualizado correctamente.', 'exito');
         };
     }
 

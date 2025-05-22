@@ -11,6 +11,56 @@ body {
   color: #333;
 }
 
+body.modo-oscuro {
+  background-color: #181a1b !important;
+  color: #f1f1f1 !important;
+}
+body.modo-oscuro .dashboard,
+body.modo-oscuro .sidebar,
+body.modo-oscuro .content,
+body.modo-oscuro .card,
+body.modo-oscuro .table-container,
+body.modo-oscuro .restaurant-actions {
+  background: #23272b !important;
+  color: #f1f1f1 !important;
+}
+body.modo-oscuro .sidebar .logo,
+body.modo-oscuro .menu li a {
+  color: #ffb347 !important;
+}
+body.modo-oscuro .menu li.active a,
+body.modo-oscuro .menu li a:hover {
+  background-color: #333 !important;
+  color: #ffb347 !important;
+  border-left: 3px solid #ffb347 !important;
+}
+body.modo-oscuro .card {
+  background: #23272b !important;
+  color: #f1f1f1 !important;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+}
+body.modo-oscuro .card-icon {
+  background: #444 !important;
+  color: #ffb347 !important;
+}
+body.modo-oscuro .btn-small {
+  background: #444 !important;
+  color: #ffb347 !important;
+}
+body.modo-oscuro .btn-small:hover {
+  background: #ffb347 !important;
+  color: #23272b !important;
+}
+body.modo-oscuro .btn-secondary {
+  background: #23272b !important;
+  color: #ffb347 !important;
+  border-color: #ffb347 !important;
+}
+body.modo-oscuro .btn-secondary:hover {
+  background: #ffb347 !important;
+  color: #23272b !important;
+}
+
 .dashboard {
   display: flex;
   min-height: 100vh;
@@ -262,5 +312,22 @@ table th {
 
   .dashboard-cards {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-cards {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .content {
+    padding: 12px 2vw;
+  }
+  .sidebar {
+    padding: 0;
+  }
+  .sidebar .logo {
+    font-size: 1em;
+    padding: 10px 8px;
   }
 }

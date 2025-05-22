@@ -1,5 +1,34 @@
 document.addEventListener('DOMContentLoaded', function() {
     // --- FORMULARIO PARA AGREGAR PLATO ---
+    function mostrarNotificacion(msg, tipo = 'info') {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.textContent = msg;
+        toast.style.padding = '16px 28px';
+        toast.style.borderRadius = '10px';
+        toast.style.fontSize = '1.08em';
+        toast.style.fontWeight = '500';
+        toast.style.boxShadow = '0 4px 18px rgba(0,0,0,0.13)';
+        toast.style.color = '#fff';
+        toast.style.opacity = '0.97';
+        toast.style.transition = 'transform 0.2s, opacity 0.2s';
+        toast.style.transform = 'translateY(-10px)';
+        if (tipo === 'exito' || tipo === 'success') {
+            toast.style.background = 'linear-gradient(90deg,#43e97b 0,#38f9d7 100%)';
+        } else if (tipo === 'error') {
+            toast.style.background = 'linear-gradient(90deg,#e53935 0,#ff6e40 100%)';
+        } else {
+            toast.style.background = 'linear-gradient(90deg,#ff9800 0,#ffb347 100%)';
+        }
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-30px)';
+            setTimeout(() => toast.remove(), 400);
+        }, 2200);
+    }
+
     function mostrarModalNuevoPlato() {
         let modal = document.getElementById('nuevo-plato-modal');
         if (!modal) {
@@ -53,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const imgUrl = modal.querySelector('#plato-img-url').value.trim();
             const imgFile = modal.querySelector('#plato-img-file').files[0];
             if (!nombre || !precio) {
-                alert('Nombre y precio son obligatorios.');
+                mostrarNotificacion('Nombre y precio son obligatorios.', 'error');
                 return;
             }
             // Leer imagen si se subió
@@ -75,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let platos = JSON.parse(localStorage.getItem('platos')) || [];
         platos.push(plato);
         localStorage.setItem('platos', JSON.stringify(platos));
-        alert('Plato agregado correctamente.');
+        mostrarNotificacion('Plato agregado correctamente.', 'exito');
     }
 
     // Enlazar botón de menú "Nuevo Plato"
@@ -201,5 +230,157 @@ document.addEventListener('DOMContentLoaded', function() {
           }
         };
       });
+    }
+
+    // --- REAL-TIME PEDIDOS UPDATE ---
+    function renderPedidosRecientesTable() {
+      const tablaPedidos = document.getElementById('tabla-pedidos-recientes')?.querySelector('tbody');
+      if (!tablaPedidos) return;
+      let pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+      if (!Array.isArray(pedidos) || pedidos.length === 0) {
+        tablaPedidos.innerHTML = `<tr><td colspan='6' style='color:#888;text-align:center;padding:18px;'>No hay pedidos realizados.</td></tr>`;
+        return;
+      }
+      tablaPedidos.innerHTML = pedidos.map((p, idx) => `
+        <tr>
+          <td>#${idx + 1}</td>
+          <td>${p.cliente || '-'}</td>
+          <td>${Array.isArray(p.platos) ? p.platos.map(pl=>`${pl.nombre} <span style='color:#ff5722;'>x${pl.cantidad}</span>`).join(', ') : '-'}</td>
+          <td>${p.total}</td>
+          <td><span class="status ${p.estado === 'Pendiente' ? 'pending' : (p.estado === 'Aceptado' ? 'in-progress' : (p.estado === 'Entregado' ? 'ready' : 'rechazado'))}">${p.estado || 'Pendiente'}</span></td>
+          <td>
+            ${p.estado === 'Pendiente' ? `
+              <button class="btn-small aceptar-pedido" data-idx="${idx}">Aceptar</button>
+              <button class="btn-small rechazar-pedido" data-idx="${idx}">Rechazar</button>
+            ` : p.estado === 'Aceptado' ? `
+              <button class="btn-small entregar-pedido" data-idx="${idx}">Pedido Entregado</button>
+            ` : '<span style="color:#888;">Sin acciones</span>'}
+          </td>
+        </tr>
+      `).join('');
+      // Acciones aceptar/rechazar/entregar
+      tablaPedidos.querySelectorAll('.aceptar-pedido').forEach(btn => {
+        btn.onclick = function() {
+          const idx = btn.getAttribute('data-idx');
+          let pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+          if (pedidos[idx]) {
+            pedidos[idx].estado = 'Aceptado';
+            localStorage.setItem('pedidos', JSON.stringify(pedidos));
+          }
+        };
+      });
+      tablaPedidos.querySelectorAll('.rechazar-pedido').forEach(btn => {
+        btn.onclick = function() {
+          const idx = btn.getAttribute('data-idx');
+          let pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+          if (pedidos[idx]) {
+            pedidos[idx].estado = 'Rechazado';
+            localStorage.setItem('pedidos', JSON.stringify(pedidos));
+          }
+        };
+      });
+      tablaPedidos.querySelectorAll('.entregar-pedido').forEach(btn => {
+        btn.onclick = function() {
+          const idx = btn.getAttribute('data-idx');
+          let pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+          if (pedidos[idx]) {
+            pedidos[idx].estado = 'Entregado';
+            localStorage.setItem('pedidos', JSON.stringify(pedidos));
+            // Mostrar encuesta no intrusiva
+            mostrarEncuestaSatisfaccion(pedidos[idx]);
+            // Sumar ingresos de hoy
+            sumarIngresoHoy(pedidos[idx]);
+          }
+        };
+      });
+    }
+
+    function refreshPedidosRestauranteView() {
+      // If modal is open, refresh it
+      const modal = document.getElementById('pedidos-modal-rest');
+      if (modal && modal.style.display !== 'none') {
+        modal.remove();
+        mostrarModalPedidosRestaurante();
+      }
+      // Update dashboard counters if present
+      const pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+      const pendientes = pedidos.filter(p => p.estado === 'Pendiente');
+      const pendientesSpan = document.getElementById('pedidos-pendientes');
+      if (pendientesSpan) pendientesSpan.textContent = pendientes.length + ' pedidos';
+      // Update Pedidos Recientes table in dashboard
+      renderPedidosRecientesTable();
+    }
+    window.addEventListener('storage', function(e) {
+      if (e.key === 'pedidos') refreshPedidosRestauranteView();
+    });
+    (function() {
+      const originalSetItem = localStorage.setItem;
+      localStorage.setItem = function(key, value) {
+        originalSetItem.apply(this, arguments);
+        if (key === 'pedidos') refreshPedidosRestauranteView();
+      };
+    })();
+    // On DOMContentLoaded, render Pedidos Recientes from localStorage
+    renderPedidosRecientesTable();
+    // Encuesta de satisfacción no intrusiva
+    function mostrarEncuestaSatisfaccion(pedido) {
+      if (document.getElementById('encuesta-satisfaccion')) return;
+      const encuesta = document.createElement('div');
+      encuesta.id = 'encuesta-satisfaccion';
+      encuesta.style.position = 'fixed';
+      encuesta.style.bottom = '32px';
+      encuesta.style.right = '32px';
+      encuesta.style.background = '#fff';
+      encuesta.style.borderRadius = '12px';
+      encuesta.style.boxShadow = '0 4px 24px rgba(0,0,0,0.13)';
+      encuesta.style.padding = '22px 28px 18px 28px';
+      encuesta.style.zIndex = 9999;
+      encuesta.style.display = 'flex';
+      encuesta.style.flexDirection = 'column';
+      encuesta.style.alignItems = 'center';
+      encuesta.innerHTML = `
+        <span style='font-size:1.1em;font-weight:500;margin-bottom:10px;'>¿Cómo calificarías tu experiencia con este pedido?</span>
+        <div id='estrellas-encuesta' style='font-size:2.1em; color:#ffb400; margin-bottom:10px; cursor:pointer;'>
+          <span data-star='1'>&#9734;</span>
+          <span data-star='2'>&#9734;</span>
+          <span data-star='3'>&#9734;</span>
+          <span data-star='4'>&#9734;</span>
+          <span data-star='5'>&#9734;</span>
+        </div>
+        <button id='cerrar-encuesta' style='margin-top:4px;background:#ff5722;color:#fff;border:none;padding:6px 18px;border-radius:6px;font-size:1em;cursor:pointer;'>Cerrar</button>
+      `;
+      document.body.appendChild(encuesta);
+      let estrellas = encuesta.querySelectorAll('#estrellas-encuesta span');
+      estrellas.forEach(star => {
+        star.addEventListener('mouseenter', function() {
+          let val = parseInt(this.getAttribute('data-star'));
+          estrellas.forEach((s, i) => s.innerHTML = i < val ? '&#9733;' : '&#9734;');
+        });
+        star.addEventListener('mouseleave', function() {
+          estrellas.forEach(s => s.innerHTML = '&#9734;');
+        });
+        star.addEventListener('click', function() {
+          let val = parseInt(this.getAttribute('data-star'));
+          estrellas.forEach((s, i) => s.innerHTML = i < val ? '&#9733;' : '&#9734;');
+          encuesta.querySelector('span').textContent = `¡Gracias por tu calificación de ${val} estrella${val>1?'s':''}!`;
+          setTimeout(()=>{
+            encuesta.remove();
+          }, 1200);
+          // Aquí podrías guardar la calificación en localStorage o enviarla al backend si lo deseas
+        });
+      });
+      encuesta.querySelector('#cerrar-encuesta').onclick = () => encuesta.remove();
+    }
+    // Sumar ingresos de hoy
+    function sumarIngresoHoy(pedido) {
+      // Buscar el elemento de ingresos hoy
+      const ingresosElem = document.getElementById('ingresos-hoy');
+      if (!ingresosElem) return;
+      // Obtener el valor actual
+      let actual = ingresosElem.textContent.replace(/[^\d.]/g, '');
+      let total = parseFloat(actual) || 0;
+      let suma = parseFloat(pedido.total) || 0;
+      total += suma;
+      ingresosElem.textContent = `$${total.toFixed(2)}`;
     }
 });

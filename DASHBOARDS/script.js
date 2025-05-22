@@ -223,3 +223,32 @@ searchInput.addEventListener('input', () => {
   };
 })();
 
+function mostrarNotificacion(msg, tipo = 'info') {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.textContent = msg;
+  toast.style.padding = '16px 28px';
+  toast.style.borderRadius = '10px';
+  toast.style.fontSize = '1.08em';
+  toast.style.fontWeight = '500';
+  toast.style.boxShadow = '0 4px 18px rgba(0,0,0,0.13)';
+  toast.style.color = '#fff';
+  toast.style.opacity = '0.97';
+  toast.style.transition = 'transform 0.2s, opacity 0.2s';
+  toast.style.transform = 'translateY(-10px)';
+  if (tipo === 'exito' || tipo === 'success') {
+    toast.style.background = 'linear-gradient(90deg,#43e97b 0,#38f9d7 100%)';
+  } else if (tipo === 'error') {
+    toast.style.background = 'linear-gradient(90deg,#e53935 0,#ff6e40 100%)';
+  } else {
+    toast.style.background = 'linear-gradient(90deg,#ff9800 0,#ffb347 100%)';
+  }
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(-30px)';
+    setTimeout(() => toast.remove(), 400);
+  }, 2200);
+}
+

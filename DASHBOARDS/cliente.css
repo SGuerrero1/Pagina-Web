@@ -11,6 +11,64 @@ body {
   color: #333;
 }
 
+body.modo-oscuro {
+  background-color: #181a1b !important;
+  color: #f1f1f1;
+}
+body.modo-oscuro .dashboard,
+body.modo-oscuro .sidebar,
+body.modo-oscuro .content,
+body.modo-oscuro .food-card,
+body.modo-oscuro .table-container,
+body.modo-oscuro .app-description,
+body.modo-oscuro .contact-section {
+  background: #23272b !important;
+  color: #f1f1f1 !important;
+}
+body.modo-oscuro .sidebar .logo,
+body.modo-oscuro .menu li a {
+  color: #ffb347 !important;
+}
+body.modo-oscuro .menu li.active a,
+body.modo-oscuro .menu li a:hover {
+  background-color: #333 !important;
+  color: #ffb347 !important;
+  border-left: 3px solid #ffb347 !important;
+}
+body.modo-oscuro .food-card {
+  background: #23272b !important;
+  color: #f1f1f1 !important;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+}
+body.modo-oscuro .search-bar {
+  background: #23272b !important;
+}
+body.modo-oscuro .search-bar input {
+  background: #23272b !important;
+  color: #f1f1f1 !important;
+}
+body.modo-oscuro .search-bar button {
+  background: #444 !important;
+  color: #ffb347 !important;
+}
+body.modo-oscuro .price {
+  color: #ffb347 !important;
+}
+body.modo-oscuro .add-to-cart {
+  background: #444 !important;
+  color: #ffb347 !important;
+}
+body.modo-oscuro .add-to-cart:hover {
+  background: #ffb347 !important;
+  color: #23272b !important;
+}
+body.modo-oscuro .app-description,
+body.modo-oscuro .contact-section {
+  background: #23272b !important;
+  color: #f1f1f1 !important;
+  box-shadow: 0 2px 8px rgba(255,180,71,0.07);
+}
+
 /* Layout principal */
 .dashboard {
   display: flex;
@@ -210,4 +268,64 @@ header {
 
 .add-to-cart:hover {
   background-color: #e64a19;
+}
+
+@media (max-width: 900px) {
+  .dashboard {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    min-height: unset;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    flex-direction: row;
+    padding: 0;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .sidebar .logo {
+    margin-bottom: 0;
+    padding: 12px 18px;
+  }
+  .menu {
+    flex-direction: row;
+    display: flex;
+    gap: 0;
+  }
+  .menu li a {
+    padding: 12px 14px;
+    border-left: none;
+    border-bottom: 3px solid transparent;
+    border-radius: 0 0 20px 20px;
+  }
+  .menu li.active a,
+  .menu li a:hover,
+  .menu li a:focus {
+    border-left: none;
+    border-bottom: 3px solid #ff5722;
+    background: #fff0eb;
+    outline: none;
+  }
+  .content {
+    padding: 24px 8px;
+  }
+}
+@media (max-width: 600px) {
+  .food-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .categories {
+    gap: 10px;
+  }
+  .content {
+    padding: 12px 2vw;
+  }
+  .sidebar {
+    padding: 0;
+  }
+  .sidebar .logo {
+    font-size: 1em;
+    padding: 10px 8px;
+  }
 }

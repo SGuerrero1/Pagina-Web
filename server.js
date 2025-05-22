@@ -203,6 +203,40 @@ app.get('/api/restaurantes/recientes', (req, res) => {
   });
 });
 
+// Buscar usuario por email
+app.get('/api/usuarios', (req, res) => {
+  const { email } = req.query;
+  if (!email) return res.status(400).json({ error: 'Falta el email' });
+  db.get('SELECT id, nombre, email, rol FROM usuarios WHERE email = ?', [email], (err, row) => {
+    if (err) return res.status(500).json({ error: 'Error al buscar usuario' });
+    if (!row) return res.status(404).json({ error: 'Usuario no encontrado' });
+    res.json(row);
+  });
+});
+
+// Listar todos los restaurantes (id, nombre)
+app.get('/api/restaurantes', (req, res) => {
+  db.all('SELECT id, nombre FROM usuarios WHERE rol = "restaurante"', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: 'Error al obtener restaurantes' });
+    res.json(rows);
+  });
+});
+
+// Guardar pedido
+app.post('/api/pedidos', (req, res) => {
+  const { usuario_id, restaurante_id, platos, total, estado, fecha } = req.body;
+  if (!usuario_id || !restaurante_id || !platos || !total) {
+    return res.status(400).json({ error: 'Faltan datos del pedido' });
+  }
+  const fechaPedido = fecha || new Date().toISOString();
+  db.run('INSERT INTO pedidos (usuario_id, restaurante_id, fecha, total) VALUES (?, ?, ?, ?)',
+    [usuario_id, restaurante_id, fechaPedido, total], function(err) {
+      if (err) return res.status(500).json({ error: 'Error al guardar pedido' });
+      // Opcional: guardar platos en otra tabla si se requiere
+      res.json({ id: this.lastID, usuario_id, restaurante_id, total, estado: estado || 'Pendiente', fecha: fechaPedido });
+    });
+});
+
 app.listen(PORT, () => {
   console.log('Servidor backend escuchando en ' + (process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`));
 });

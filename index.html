@@ -11,6 +11,10 @@
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
 </head>
 <body>
+  <div style="position:fixed;top:18px;right:24px;z-index:10001;display:flex;gap:12px;">
+    <button id="btn-idioma" style="padding:7px 18px;border-radius:8px;border:none;background:#2257ff;color:#fff;font-weight:500;cursor:pointer;">English</button>
+    <button id="btn-darkmode" style="padding:7px 18px;border-radius:8px;border:none;background:#222;color:#fff;font-weight:500;cursor:pointer;">🌙</button>
+  </div>
   <div class="login-container">
     <div class="left-panel">
       <h1>Bienvenidos a FoodApp</h1>
@@ -107,6 +111,9 @@
     </div>
   </div>
 
+  <!-- Notificaciones toast -->
+  <div id="toast-container" style="position:fixed;top:32px;right:32px;z-index:9999;display:flex;flex-direction:column;gap:12px;"></div>
+
   <script src="login.js"></script>
   <script src="registro.js"></script>
   <script>
@@ -175,6 +182,88 @@
     // Por defecto, el campo es email, lo cambiamos a password para permitir mostrar/ocultar
     forgotInput.type = 'password';
   }
+
+  function mostrarNotificacion(msg, tipo = 'info') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.textContent = msg;
+    toast.style.padding = '16px 28px';
+    toast.style.borderRadius = '10px';
+    toast.style.fontSize = '1.08em';
+    toast.style.fontWeight = '500';
+    toast.style.boxShadow = '0 4px 18px rgba(0,0,0,0.13)';
+    toast.style.color = '#fff';
+    toast.style.opacity = '0.97';
+    toast.style.transition = 'transform 0.2s, opacity 0.2s';
+    toast.style.transform = 'translateY(-10px)';
+    if (tipo === 'exito' || tipo === 'success') {
+      toast.style.background = 'linear-gradient(90deg,#43e97b 0,#38f9d7 100%)';
+    } else if (tipo === 'error') {
+      toast.style.background = 'linear-gradient(90deg,#e53935 0,#ff6e40 100%)';
+    } else {
+      toast.style.background = 'linear-gradient(90deg,#ff9800 0,#ffb347 100%)';
+    }
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(-30px)';
+      setTimeout(() => toast.remove(), 400);
+    }, 2200);
+  }
+
+  // --- CAMBIO DE IDIOMA Y MODO OSCURO ---
+  const traducciones = {
+    'Bienvenidos a FoodApp': 'Welcome to FoodApp',
+    'Si aún no tienes una cuenta por favor regístrese aquí': 'If you do not have an account, please register here',
+    'Registrarse como Cliente': 'Register as Customer',
+    'Nombre completo': 'Full Name',
+    'Correo electrónico': 'Email',
+    'Contraseña': 'Password',
+    'Confirmar contraseña': 'Confirm Password',
+    'Teléfono': 'Phone',
+    'Dirección': 'Address',
+    'Ciudad': 'City',
+    'Código postal': 'Postal Code',
+    'Seleccione país:': 'Select country:',
+    'Colombia': 'Colombia',
+    'Acepto los términos y condiciones': 'I accept the terms and conditions',
+    'Crear Cuenta': 'Create Account',
+    'Iniciar Sesión': 'Login',
+    'o Iniciar Sesión con una cuenta': 'or Login with an account',
+    'Usuario': 'Username',
+    '¿Olvidaste tu contraseña?': 'Forgot your password?',
+    'Recuperar Contraseña': 'Recover Password',
+    'Enviar enlace': 'Send link',
+    'Bienvenido': 'Welcome',
+    'Iniciar sesión con Google': 'Login with Google',
+    'Iniciar sesión con Facebook': 'Login with Facebook',
+    'Iniciar sesión con Instagram': 'Login with Instagram',
+    'Iniciar sesión con Twitter': 'Login with Twitter',
+  };
+  let idiomaIngles = false;
+  document.getElementById('btn-idioma').onclick = function() {
+    idiomaIngles = !idiomaIngles;
+    this.textContent = idiomaIngles ? 'Español' : 'English';
+    // Cambia textos clave
+    document.querySelectorAll('h1,h2,h3,label,button,a,p,option').forEach(el => {
+      if (idiomaIngles) {
+        if (traducciones[el.textContent.trim()]) el.textContent = traducciones[el.textContent.trim()];
+      } else {
+        // Revertir a español
+        for (const [es, en] of Object.entries(traducciones)) {
+          if (el.textContent.trim() === en) el.textContent = es;
+        }
+      }
+    });
+  };
+  // --- MODO OSCURO ---
+  let darkMode = false;
+  document.getElementById('btn-darkmode').onclick = function() {
+    darkMode = !darkMode;
+    document.body.classList.toggle('modo-oscuro', darkMode);
+    this.textContent = darkMode ? '☀️' : '🌙';
+  };
   </script>
 </body>
 </html>
