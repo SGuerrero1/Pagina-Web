@@ -662,3 +662,74 @@ document.addEventListener('DOMContentLoaded', function() {
     renderPlatos(1, true);
     renderizarFiltros();
 });
+// === TOGGLE MODO OSCURO ===
+const themeToggle = document.getElementById('themeToggle');
+if (themeToggle) {
+  themeToggle.addEventListener('change', () => {
+    const isDark = themeToggle.checked;
+    document.body.classList.toggle('modo-oscuro', isDark);
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  });
+
+  // Aplicar tema guardado al cargar
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'dark') {
+    document.body.classList.add('modo-oscuro');
+    themeToggle.checked = true;
+  }
+}
+// === TOGGLE DE IDIOMA ===
+const langToggle = document.getElementById('langToggle');
+if (langToggle) {
+  langToggle.addEventListener('click', () => {
+    const newLang = langToggle.textContent === 'ES' ? 'EN' : 'ES';
+    langToggle.textContent = newLang;
+    localStorage.setItem('lang', newLang);
+    traducirTexto(newLang);
+  });
+
+  // Al cargar, aplicar idioma guardado
+  const savedLang = localStorage.getItem('lang') || 'ES';
+  langToggle.textContent = savedLang;
+  traducirTexto(savedLang);
+}
+
+// Diccionario básico
+function traducirTexto(lang) {
+  const es = {
+    '¡Bienvenido, Cliente!': '¡Bienvenido, Cliente!',
+    '¿Qué es FoodApp?': '¿Qué es FoodApp?',
+    'Platos Recomendados': 'Platos Recomendados',
+    'Contacto': 'Contacto',
+    '¿Tienes dudas o necesitas ayuda? Contáctanos por WhatsApp:': '¿Tienes dudas o necesitas ayuda? Contáctanos por WhatsApp:',
+    'Políticas de Seguridad': 'Políticas de Seguridad'
+  };
+
+  const en = {
+    '¡Bienvenido, Cliente!': 'Welcome, Customer!',
+    '¿Qué es FoodApp?': 'What is FoodApp?',
+    'Platos Recomendados': 'Recommended Dishes',
+    'Contacto': 'Contact',
+    '¿Tienes dudas o necesitas ayuda? Contáctanos por WhatsApp:': 'Need help? Contact us via WhatsApp:',
+    'Políticas de Seguridad': 'Security Policy'
+  };
+
+  const diccionario = lang === 'EN' ? en : es;
+
+  // Reemplaza texto por clase
+  const textos = {
+    'h1': '¡Bienvenido, Cliente!',
+    'h2:nth-of-type(1)': '¿Qué es FoodApp?',
+    'h2:nth-of-type(2)': 'Platos Recomendados',
+    '.contact-section h2': 'Contacto',
+    '.contact-section p': '¿Tienes dudas o necesitas ayuda? Contáctanos por WhatsApp:',
+    '.btn-politicas': 'Políticas de Seguridad'
+  };
+
+  for (let selector in textos) {
+    const el = document.querySelector(selector);
+    if (el && diccionario[textos[selector]]) {
+      el.textContent = diccionario[textos[selector]];
+    }
+  }
+}

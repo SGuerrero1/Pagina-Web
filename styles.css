@@ -292,3 +292,25 @@ h1 {
     max-height: 300px;
   }
 }
+body.modo-oscuro {
+  background-color: #1e1e1e;
+  background-image: none;
+  color: #f1f1f1;
+}
+body.modo-oscuro .login-container {
+  background-color: #2c2c2c;
+}
+body.modo-oscuro input,
+body.modo-oscuro select {
+  background-color: #333;
+  color: #f1f1f1;
+  border-color: #555;
+}
+body.modo-oscuro .login-btn,
+body.modo-oscuro .register-btn {
+  background-color: #ff9800;
+  color: #fff;
+}
+body.modo-oscuro .form-container {
+  background-color: #333;
+}

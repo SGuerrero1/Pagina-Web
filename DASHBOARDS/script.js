@@ -241,4 +241,77 @@ function mostrarNotificacion(msg, tipo = 'info') {
     setTimeout(() => toast.remove(), 400);
   }, 2200);
 }
+// === MODO OSCURO ===
+const themeToggle = document.getElementById('themeToggle');
+const themeIcon = document.getElementById('themeIcon');
+if (themeToggle && themeIcon) {
+  themeToggle.addEventListener('change', () => {
+    const darkMode = themeToggle.checked;
+    document.body.classList.toggle('modo-oscuro', darkMode);
+    localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+    themeIcon.textContent = darkMode ? '🌙' : '🌞';
+  });
+
+  // Cargar tema guardado
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'dark') {
+    document.body.classList.add('modo-oscuro');
+    themeToggle.checked = true;
+    themeIcon.textContent = '🌙';
+  }
+}
+
+// === CAMBIO DE IDIOMA ===
+const langToggle = document.getElementById('langToggle');
+if (langToggle) {
+  langToggle.addEventListener('click', () => {
+    const lang = langToggle.textContent === 'ES' ? 'EN' : 'ES';
+    langToggle.textContent = lang;
+    localStorage.setItem('lang', lang);
+    traducirLogin(lang);
+  });
+
+  const savedLang = localStorage.getItem('lang') || 'ES';
+  langToggle.textContent = savedLang;
+  traducirLogin(savedLang);
+}
+
+// Traducción básica
+function traducirLogin(lang) {
+  const textos = {
+    ES: {
+      title: 'Bienvenidos a FoodApp',
+      subtitle: 'Si aún no tienes una cuenta por favor regístrese aquí',
+      login: 'Iniciar Sesión',
+      user: 'Usuario',
+      pass: 'Contraseña',
+      loginBtn: 'Iniciar Sesión',
+      registerBtn: 'Registrarse como Cliente',
+      forgot: '¿Olvidaste tu contraseña?',
+      separator: 'o Iniciar Sesión con una cuenta'
+    },
+    EN: {
+      title: 'Welcome to FoodApp',
+      subtitle: 'If you don’t have an account, please register here',
+      login: 'Login',
+      user: 'Username',
+      pass: 'Password',
+      loginBtn: 'Login',
+      registerBtn: 'Register as Client',
+      forgot: 'Forgot your password?',
+      separator: 'or Login with an account'
+    }
+  };
+
+  const t = textos[lang];
+  document.querySelector('.left-panel h1').textContent = t.title;
+  document.querySelector('.subtitle').textContent = t.subtitle;
+  document.querySelector('.login-title').textContent = t.login;
+  document.getElementById('username').placeholder = t.user;
+  document.getElementById('password').placeholder = t.pass;
+  document.querySelector('#login-form button[type="submit"]').textContent = t.loginBtn;
+  document.getElementById('register-btn').textContent = t.registerBtn;
+  document.getElementById('forgot-password-link').textContent = t.forgot;
+  document.querySelector('.separator').textContent = t.separator;
+}
 
