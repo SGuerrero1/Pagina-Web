@@ -5,368 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Food App</title>
   <link rel="icon" type="image/png" href="DASHBOARDS/IMAGENES RESTAURANTE/LOGO FOODAPP.png" />
+  <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+  <link rel="stylesheet" href="styles/darkMode.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="..." crossorigin="anonymous" />
   <!-- Google Sign In -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-body {
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #353535;
-  background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('/api/placeholder/1200/800');
-  background-size: cover;
-  background-position: center;
-}
-
-/* Contenedor principal de login */
-.login-container {
-  display: flex;
-  width: 900px;
-  height: 550px;
-  background-color: white;
-  border-radius: 15px;
-  overflow: hidden;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-}
-
-/* Panel izquierdo (registro) */
-.left-panel {
-  width: 40%;
-  background-color: #ffe0cc;
-  padding: 40px 30px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  text-align: center;
-}
-
-/* Panel derecho (login) */
-.right-panel {
-  width: 60%;
-  padding: 50px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-h1 {
-  font-size: 2.2rem;
-  color: #333;
-  margin-bottom: 20px;
-}
-
-.subtitle {
-  color: #666;
-  margin-bottom: 30px;
-  font-size: 1rem;
-}
-
-/* Logo de FoodApp */
-.logo {
-  margin: 20px 0;
-  text-align: center;
-}
-
-.logo i {
-  font-size: 3rem;
-  color: #ff7d2e;
-}
-
-/* Botón de registro */
-.register-btn {
-  display: inline-block;
-  margin-top: 20px;
-  padding: 10px 30px;
-  border: 2px solid #ff7d2e;
-  border-radius: 50px;
-  color: #ff7d2e;
-  text-decoration: none;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.register-btn:hover {
-  background-color: #ff7d2e;
-  color: white;
-}
-
-/* Título de inicio de sesión */
-.login-title {
-  font-size: 2rem;
-  margin-bottom: 40px;
-  color: #333;
-  text-align: center;
-}
-
-/* Botones de redes sociales */
-.social-login {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-bottom: 30px;
-  align-items: center;
-}
-
-.social-btn {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 1px solid #ddd;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background-color: white;
-}
-
-.social-btn:hover {
-  background-color: #f5f5f5;
-  transform: scale(1.05);
-}
-
-/* Estilos específicos para el botón de Google personalizado */
-.google-btn-custom {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  border: 1px solid #ddd;
-  background-color: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.google-btn-custom:hover {
-  background-color: #f5f5f5;
-  transform: scale(1.05);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.google-btn-custom i {
-  color: #4285f4;
-  font-size: 1.2rem;
-}
-
-/* Contenedor para el botón oficial de Google (oculto) */
-#google-signin-container {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-  visibility: hidden;
-}
-
-.icon {
-  color: #666;
-  font-size: 1.2rem;
-}
-
-/* Separador */
-.separator {
-  text-align: center;
-  margin: 20px 0;
-  color: #999;
-}
-
-/* Grupos de formulario */
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-control {
-  width: 100%;
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 1rem;
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: #ff7d2e;
-}
-
-/* Botón de iniciar sesión */
-.login-btn {
-  width: 50%;
-  margin: 20px auto 0;
-  padding: 12px;
-  background-color: #ff7d2e;
-  color: white;
-  border: none;
-  border-radius: 50px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: block;
-}
-
-.login-btn:hover {
-  background-color: #e56b1a;
-}
-
-/* Contenedor del formulario con scroll */
-.form-container {
-  display: none;
-  max-height: 350px;
-  overflow-y: auto;
-  width: 100%;
-  margin-top: 20px;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  padding: 0 5px;
-  background-color: white;
-}
-
-/* Estilo personalizado para la barra de desplazamiento */
-.form-container::-webkit-scrollbar {
-  width: 8px;
-}
-
-.form-container::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.form-container::-webkit-scrollbar-thumb {
-  background: #ff7d2e;
-  border-radius: 10px;
-}
-
-.form-container::-webkit-scrollbar-thumb:hover {
-  background: #e56b1a;
-}
-
-/* Estilizando el checkbox */
-.checkbox-container {
-  display: block;
-  position: relative;
-  padding-left: 35px;
-  margin-bottom: 12px;
-  cursor: pointer;
-  font-size: 16px;
-  user-select: none;
-  color: #666;
-}
-
-.checkbox-container input {
-  position: absolute;
-  opacity: 0;
-  cursor: pointer;
-  height: 0;
-  width: 0;
-}
-
-.checkmark {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 20px;
-  width: 20px;
-  background-color: #eee;
-  border-radius: 3px;
-}
-
-.checkbox-container:hover input ~ .checkmark {
-  background-color: #ccc;
-}
-
-.checkbox-container input:checked ~ .checkmark {
-  background-color: #ff7d2e;
-}
-
-.checkmark:after {
-  content: "";
-  position: absolute;
-  display: none;
-}
-
-.checkbox-container input:checked ~ .checkmark:after {
-  display: block;
-}
-
-.checkbox-container .checkmark:after {
-  left: 7px;
-  top: 3px;
-  width: 5px;
-  height: 10px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
-
-#form-registro {
-  padding: 15px;
-}
-
-/* Mensaje de error */
-.error-message {
-  color: #ff3e3e;
-  font-size: 0.9rem;
-  margin-top: 5px;
-  text-align: center;
-  min-height: 20px;
-}
-
-/* Responsive */
-@media (max-width: 900px) {
-  .login-container {
-    width: 95%;
-    height: auto;
-    flex-direction: column;
-  }
-  
-  .left-panel, .right-panel {
-    width: 100%;
-    padding: 30px 20px;
-  }
-  
-  .form-container {
-    max-height: 300px;
-  }
-}
-
-body.modo-oscuro {
-  background-color: #1e1e1e;
-  background-image: none;
-  color: #f1f1f1;
-}
-
-body.modo-oscuro .login-container {
-  background-color: #2c2c2c;
-}
-
-body.modo-oscuro input,
-body.modo-oscuro select {
-  background-color: #333;
-  color: #f1f1f1;
-  border-color: #555;
-}
-
-body.modo-oscuro .login-btn,
-body.modo-oscuro .register-btn {
-  background-color: #ff9800;
-  color: #fff;
-}
-
-body.modo-oscuro .form-container {
-  background-color: #333;
-}
-  </style>
 </head>
 <body>
   <div class="login-container">
@@ -426,15 +70,11 @@ body.modo-oscuro .form-container {
     <div class="right-panel">
       <h2 class="login-title">Iniciar Sesión</h2>
       
+      <!-- Botones de redes sociales - VERSIÓN ÚNICA -->
       <div class="social-login">
-        <!-- Botón de Google personalizado que activa el oficial -->
-        <div class="google-btn-custom" id="google-signin-trigger" title="Iniciar sesión con Google">
-          <i class="fab fa-google"></i>
+        <div class="social-btn" id="login-google" title="Iniciar sesión con Google">
+          <span class="icon"><i class="fab fa-google"></i></span>
         </div>
-        
-        <!-- Contenedor oculto para el botón oficial de Google -->
-        <div id="google-signin-container"></div>
-        
         <div class="social-btn" id="login-facebook" title="Iniciar sesión con Facebook">
           <span class="icon"><i class="fab fa-facebook-f"></i></span>
         </div>
@@ -473,307 +113,140 @@ body.modo-oscuro .form-container {
       </div>
     </div>
   </div>
-
+  
   <!-- Notificaciones toast -->
   <div id="toast-container" style="position:fixed;top:32px;right:32px;z-index:9999;display:flex;flex-direction:column;gap:12px;"></div>
   
+  <!-- Scripts externos -->
+  <script src="login.js"></script>
+  <script src="registro.js"></script>
+  <script src="google-auth-new.js"></script>
+  <script src="js/themeToggle.js"></script>
+  
   <script>
-// Usuarios predefinidos admin y restaurante
-const usuariosFijos = [
-  {
-    email: 'admin',
-    password: 'admin123',
-    rol: 'admin'
-  },
-  {
-    email: 'restaurante',
-    password: 'rest123',
-    rol: 'restaurante'
-  }
-];
-
-// Variables globales para Google Sign In
-let googleSignInInitialized = false;
-
-// Función para mostrar notificaciones
-function mostrarNotificacion(msg, tipo = 'info') {
-  const container = document.getElementById('toast-container');
-  if (!container) return;
-  
-  const toast = document.createElement('div');
-  toast.textContent = msg;
-  toast.style.padding = '16px 28px';
-  toast.style.borderRadius = '10px';
-  toast.style.fontSize = '1.08em';
-  toast.style.fontWeight = '500';
-  toast.style.boxShadow = '0 4px 18px rgba(0,0,0,0.13)';
-  toast.style.color = '#fff';
-  toast.style.opacity = '0.97';
-  toast.style.transition = 'transform 0.2s, opacity 0.2s';
-  toast.style.transform = 'translateY(-10px)';
-  
-  if (tipo === 'exito' || tipo === 'success') {
-    toast.style.background = 'linear-gradient(90deg,#43e97b 0,#38f9d7 100%)';
-  } else if (tipo === 'error') {
-    toast.style.background = 'linear-gradient(90deg,#e53935 0,#ff6e40 100%)';
-  } else {
-    toast.style.background = 'linear-gradient(90deg,#ff9800 0,#ffb347 100%)';
-  }
-  
-  container.appendChild(toast);
-  
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateY(-30px)';
-    setTimeout(() => toast.remove(), 400);
-  }, 2200);
-}
-
-// Manejo de Google Sign In
-function handleGoogleSignIn(response) {
-  try {
-    const credential = response.credential;
-    const payload = JSON.parse(atob(credential.split('.')[1]));
-    
-    const cliente = {
-      nombre: payload.name,
-      email: payload.email,
-      img: payload.picture,
-      rol: 'cliente',
-      googleId: payload.sub
-    };
-    
-    // Simulamos almacenamiento en memoria para esta demo
-    sessionStorage.setItem('clienteRegistrado', JSON.stringify(cliente));
-    sessionStorage.setItem('rol', 'cliente');
-    
-    mostrarNotificacion('Inicio de sesión con Google exitoso', 'exito');
-    
-    // En una aplicación real, redirigiría aquí
-    setTimeout(() => {
-      // window.location.href = 'DASHBOARDS/dashboard_cliente.html';
-      mostrarNotificacion('Redirigiendo al dashboard...', 'info');
-    }, 1000);
-    
-  } catch (e) {
-    console.error('Error en Google Sign In:', e);
-    mostrarNotificacion('Error al procesar el inicio de sesión con Google', 'error');
-  }
-}
-
-// Inicialización cuando se carga la página
-window.onload = function() {
-  // Configurar Google Sign In
-  if (typeof google !== 'undefined' && google.accounts) {
+  // ===== GOOGLE SIGN IN - IMPLEMENTACIÓN ÚNICA =====
+  function handleGoogleSignIn(response) {
     try {
-      google.accounts.id.initialize({
-        client_id: '628469741880-5f4ovr8vh5597o60u6g9bjvkcjuum4uc.apps.googleusercontent.com',
-        callback: handleGoogleSignIn,
-        auto_select: false,
-        cancel_on_tap_outside: true
-      });
+      const credential = response.credential;
+      const payload = JSON.parse(atob(credential.split('.')[1]));
       
-      // Renderizar el botón de Google en el contenedor oculto
-      google.accounts.id.renderButton(
-        document.getElementById('google-signin-container'),
-        { 
-          theme: 'outline',
-          size: 'large',
-          type: 'standard',
-          shape: 'rectangular',
-          text: 'signin_with',
-          logo_alignment: 'left'
-        }
-      );
+      const cliente = {
+        nombre: payload.name,
+        email: payload.email,
+        img: payload.picture,
+        rol: 'cliente',
+        googleId: payload.sub
+      };
       
-      googleSignInInitialized = true;
+      // Guardar datos del usuario
+      localStorage.setItem('clienteRegistrado', JSON.stringify(cliente));
+      localStorage.setItem('rol', 'cliente');
       
-      // Configurar el trigger personalizado
-      document.getElementById('google-signin-trigger').addEventListener('click', function() {
-        if (googleSignInInitialized) {
-          // Simular click en el botón oficial de Google
-          const googleBtn = document.querySelector('#google-signin-container div[role="button"]');
-          if (googleBtn) {
-            googleBtn.click();
-          } else {
-            // Fallback: usar el método programático
-            google.accounts.id.prompt();
-          }
-        } else {
-          mostrarNotificacion('Google Sign In no está disponible', 'error');
-        }
-      });
+      // Mostrar notificación y redirigir
+      mostrarNotificacion('¡Inicio de sesión exitoso!', 'success');
+      setTimeout(() => {
+        window.location.href = 'DASHBOARDS/dashboard_cliente.html';
+      }, 1000);
       
-    } catch (error) {
-      console.error('Error inicializando Google Sign In:', error);
-      document.getElementById('google-signin-trigger').addEventListener('click', function() {
-        mostrarNotificacion('Error: Google Sign In no disponible', 'error');
-      });
+    } catch (e) {
+      console.error('Error en Google Sign In:', e);
+      mostrarNotificacion('Error al iniciar sesión con Google', 'error');
     }
-  } else {
-    console.warn('Google Sign In no disponible');
-    document.getElementById('google-signin-trigger').addEventListener('click', function() {
-      mostrarNotificacion('Google Sign In no está disponible', 'error');
-    });
   }
 
-  // Configurar Facebook (placeholder)
-  document.getElementById('login-facebook').addEventListener('click', function() {
-    mostrarNotificacion('Inicio de sesión con Facebook se implementará próximamente', 'info');
-  });
-};
-
-// Registro solo cliente
-document.getElementById('form-registro').addEventListener('submit', async function(e) {
-  e.preventDefault();
-
-  const inputs = this.querySelectorAll('input, select');
-  const nombre = inputs[0].value.trim();
-  const email = inputs[1].value.trim();
-  const password = inputs[2].value.trim();
-  const confirmPassword = inputs[3].value.trim();
-  const telefono = inputs[4].value.trim();
-  const direccion = inputs[5].value.trim();
-  const ciudad = inputs[6].value.trim();
-  const codigoPostal = inputs[7].value.trim();
-  const pais = inputs[8].value;
-  const rol = 'cliente';
-
-  if (password !== confirmPassword) {
-    mostrarNotificacion('Las contraseñas no coinciden.', 'error');
-    return;
-  }
-
-  if (!pais) {
-    mostrarNotificacion('Por favor selecciona un país.', 'error');
-    return;
-  }
-
-  // Simulación de registro exitoso
-  try {
-    // En una aplicación real, aquí iría la llamada al servidor
-    mostrarNotificacion('Registro exitoso. Ahora puedes iniciar sesión.', 'exito');
-    this.reset();
-    document.getElementById('registro-cliente').style.display = 'none';
-  } catch (err) {
-    mostrarNotificacion('Error de conexión con el servidor.', 'error');
-  }
-});
-
-// Login
-document.getElementById('login-form').addEventListener('submit', async function(e) {
-  e.preventDefault();
-
-  const username = document.getElementById('username').value.trim();
-  const password = document.getElementById('password').value.trim();
-  const errorDiv = document.getElementById('login-error');
-
-  // Limpiar error anterior
-  errorDiv.textContent = '';
-
-  // Verificar usuarios predefinidos
-  const usuarioFijo = usuariosFijos.find(u => u.email === username && u.password === password);
-  
-  if (usuarioFijo) {
-    mostrarNotificacion(`Bienvenido ${usuarioFijo.rol}`, 'exito');
-    
-    // En una aplicación real, redirigiría según el rol
-    setTimeout(() => {
-      switch (usuarioFijo.rol) {
-        case 'admin':
-          mostrarNotificacion('Redirigiendo al dashboard de administrador...', 'info');
-          // window.location.href = 'DASHBOARDS/dashboard_admin.html';
-          break;
-        case 'restaurante':
-          mostrarNotificacion('Redirigiendo al dashboard de restaurante...', 'info');
-          // window.location.href = 'DASHBOARDS/dashboard_restaurante.html';
-          break;
-        case 'cliente':
-          mostrarNotificacion('Redirigiendo al dashboard de cliente...', 'info');
-          // window.location.href = 'DASHBOARDS/dashboard_cliente.html';
-          break;
+  // ===== INICIALIZACIÓN - UNA SOLA VEZ =====
+  window.onload = function() {
+    // Inicializar Google Sign In
+    if (typeof google !== 'undefined' && google.accounts) {
+      try {
+        google.accounts.id.initialize({
+          client_id: '628469741880-5f4ovr8vh5597o60u6g9bjvkcjuum4uc.apps.googleusercontent.com',
+          callback: handleGoogleSignIn,
+          auto_select: false,
+          cancel_on_tap_outside: true
+        });
+        
+        // Configurar el botón de Google
+        document.getElementById('login-google').addEventListener('click', function() {
+          google.accounts.id.prompt();
+        });
+        
+      } catch (error) {
+        console.error('Error inicializando Google Sign In:', error);
       }
-    }, 1000);
-    return;
-  }
+    }
+    
+    // Configurar Facebook (placeholder)
+    document.getElementById('login-facebook').addEventListener('click', function() {
+      mostrarNotificacion('Inicio de sesión con Facebook se implementará próximamente', 'info');
+    });
+  };
 
-  // Si no es usuario predefinido, mostrar error
-  errorDiv.textContent = 'Usuario o contraseña incorrectos.';
-});
-
-// Mostrar/ocultar formulario de registro
-document.getElementById('register-btn').addEventListener('click', function(e) {
-  e.preventDefault();
-  const container = document.getElementById('registro-cliente');
-  if (container.style.display === 'block') {
-    container.style.display = 'none';
-    this.textContent = 'Registrarse como Cliente';
-  } else {
-    container.style.display = 'block';
-    this.textContent = 'Ocultar Registro';
-  }
-});
-
-// Mostrar/ocultar contraseña en login
-document.getElementById('toggle-login-password').addEventListener('click', function() {
-  const input = document.getElementById('password');
-  if (input.type === 'password') {
-    input.type = 'text';
-    this.textContent = '🙈';
-  } else {
-    input.type = 'password';
-    this.textContent = '👁️‍🗨️';
-  }
-});
-
-// Mostrar/ocultar contraseña en registro
-document.querySelectorAll('.toggle-register-password').forEach(function(btn) {
-  btn.addEventListener('click', function() {
-    const input = this.previousElementSibling;
+  // ===== MOSTRAR/OCULTAR CONTRASEÑAS =====
+  // Contraseña de login
+  document.getElementById('toggle-login-password').addEventListener('click', function() {
+    const input = document.getElementById('password');
     if (input.type === 'password') {
       input.type = 'text';
       this.textContent = '🙈';
     } else {
       input.type = 'password';
-      this.textContent = '👁️';
+      this.textContent = '👁️‍🗨️';
     }
   });
-});
 
-// Modal de recuperar contraseña
-document.getElementById('forgot-password-link').addEventListener('click', function(e) {
-  e.preventDefault();
-  document.getElementById('forgot-password-modal').style.display = 'flex';
-  document.getElementById('forgot-msg').textContent = '';
-  document.getElementById('forgot-form').reset();
-});
+  // Contraseñas de registro
+  document.querySelectorAll('.toggle-register-password').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const input = this.previousElementSibling;
+      if (input.type === 'password') {
+        input.type = 'text';
+        this.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        this.textContent = '👁️‍🗨️';
+      }
+    });
+  });
 
-document.getElementById('close-forgot-modal').addEventListener('click', function() {
-  document.getElementById('forgot-password-modal').style.display = 'none';
-});
-
-document.getElementById('forgot-password-modal').addEventListener('click', function(e) {
-  if (e.target === this) {
-    this.style.display = 'none';
-  }
-});
-
-document.getElementById('forgot-form').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const email = document.getElementById('forgot-email').value.trim();
-  const msg = document.getElementById('forgot-msg');
-  
-  if (email) {
-    msg.style.color = '#388e3c';
-    msg.innerHTML = 'Se ha enviado un enlace de recuperación a tu correo.';
+  // ===== FUNCIÓN DE NOTIFICACIONES =====
+  function mostrarNotificacion(msg, tipo = 'info') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    
+    const toast = document.createElement('div');
+    toast.textContent = msg;
+    toast.style.padding = '16px 28px';
+    toast.style.borderRadius = '10px';
+    toast.style.fontSize = '1.08em';
+    toast.style.fontWeight = '500';
+    toast.style.boxShadow = '0 4px 18px rgba(0,0,0,0.13)';
+    toast.style.color = '#fff';
+    toast.style.opacity = '0.97';
+    toast.style.transition = 'transform 0.2s, opacity 0.2s';
+    toast.style.transform = 'translateY(-10px)';
+    
+    // Colores según el tipo
+    switch(tipo) {
+      case 'success':
+      case 'exito':
+        toast.style.background = 'linear-gradient(90deg,#43e97b 0,#38f9d7 100%)';
+        break;
+      case 'error':
+        toast.style.background = 'linear-gradient(90deg,#e53935 0,#ff6e40 100%)';
+        break;
+      default:
+        toast.style.background = 'linear-gradient(90deg,#ff9800 0,#ffb347 100%)';
+    }
+    
+    container.appendChild(toast);
+    
     setTimeout(() => {
-      document.getElementById('forgot-password-modal').style.display = 'none';
-    }, 2000);
-  } else {
-    msg.style.color = '#e53935';
-    msg.textContent = 'Por favor ingresa un correo válido.';
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(-30px)';
+      setTimeout(() => toast.remove(), 400);
+    }, 2200);
   }
-});
   </script>
 </body>
 </html>
