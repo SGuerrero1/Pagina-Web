@@ -63,9 +63,6 @@ document.getElementById('login-form').addEventListener('submit', async function(
     });
     const data = await res.json();
     if (res.ok) {
-      // Guardar rol para mantener sesión (puedes usar localStorage o sessionStorage solo para el rol)
-      localStorage.setItem('rol', data.rol);
-      localStorage.setItem('userRole', data.rol === 'restaurante' ? 'restaurant' : data.rol);
       // Redirigir según rol
       switch (data.rol) {
         case 'admin':

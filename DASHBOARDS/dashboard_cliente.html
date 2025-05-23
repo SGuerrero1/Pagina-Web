@@ -5,19 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FoodApp - Panel de Cliente</title>
     <link rel="stylesheet" href="cliente.css">
+    <link rel="icon" type="image/png" href="DASHBOARDS/IMAGENES RESTAURANTE/LOGO FOODAPP.png" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/darkMode.css">
+    <link rel="stylesheet" href="../styles/shared.css">
 </head>
 <body>
-    <!-- Botones de idioma y modo oscuro en la parte superior derecha -->
-    <div id="config-buttons-cliente" style="position:fixed;top:18px;right:24px;z-index:10001;display:flex;gap:12px;">
-        <button id="btn-idioma" style="padding:7px 18px;border-radius:8px;border:none;background:#2257ff;color:#fff;font-weight:500;cursor:pointer;">English</button>
-        <button id="btn-darkmode" style="padding:7px 18px;border-radius:8px;border:none;background:#222;color:#fff;font-weight:500;cursor:pointer;">🌙</button>
-    </div>
     <!-- Contenido del Dashboard (Cliente) -->
     <div class="dashboard client-dashboard" id="client-dashboard">
+        <div class="toggle-container-dashboard">
+            <label class="theme-switch">
+                <input type="checkbox" id="themeToggle">
+                <span class="slider">
+                    <i class="fas fa-sun"></i>
+                    <i class="fas fa-moon"></i>
+                </span>
+            </label>
+            <button class="lang-btn" id="langToggle">ES</button>
+        </div>
         <nav class="sidebar">
             <div class="logo">
-                <i class="fas fa-utensils"></i>
+                <img src="IMAGENES RESTAURANTE/LOGO FOODAPP.png" alt="FoodApp Logo" style="height:48px;object-fit:contain;">
                 <h2>FoodApp</h2>
             </div>
             <ul class="menu">
@@ -65,6 +73,9 @@
                 </p>
             </section>
         </main>
+        <footer style="text-align:center;margin:32px 0 12px 0;font-size:0.98em;color:#888;">
+            <a href="../politicas_seguridad.html" style="color:#2257ff;text-decoration:underline;">Políticas de Seguridad</a>
+        </footer>
     </div>
     <script src="cliente.js"></script>
     <script>
@@ -122,57 +133,26 @@
             });
         }
 
-        // --- CAMBIO DE IDIOMA Y MODO OSCURO ---
-        const traducciones = {
-            '¡Bienvenido, Cliente!': 'Welcome, Customer!',
-            'Menú': 'Menu',
-            'GPS': 'GPS',
-            'Carrito': 'Cart',
-            'Historial': 'History',
-            'Perfil': 'Profile',
-            'Cerrar Sesión': 'Logout',
-            'Inicio': 'Home',
-            '¿Qué es FoodApp?': 'What is FoodApp?',
-            'FoodApp es una plataforma digital que conecta a clientes y restaurantes, permitiéndote explorar menús, buscar tus platos favoritos, realizar pedidos, gestionar tu perfil y mucho más, todo de forma rápida y sencilla.': 'FoodApp is a digital platform that connects customers and restaurants, allowing you to explore menus, search for your favorite dishes, place orders, manage your profile, and much more, all quickly and easily.',
-            'Buscar platos por nombre...': 'Search dishes by name...',
-            'Platos Recomendados': 'Recommended Dishes',
-            'Contacto': 'Contact',
-            '¿Tienes dudas o necesitas ayuda? Contáctanos por WhatsApp:': 'Do you have questions or need help? Contact us via WhatsApp:',
-            // Reverso para traducción bidireccional
-            'Welcome, Customer!': '¡Bienvenido, Cliente!',
-            'Menu': 'Menú',
-            'Cart': 'Carrito',
-            'History': 'Historial',
-            'Profile': 'Perfil',
-            'Logout': 'Cerrar Sesión',
-            'Home': 'Inicio',
-            'What is FoodApp?': '¿Qué es FoodApp?',
-            'FoodApp is a digital platform that connects customers and restaurants, allowing you to explore menus, search for your favorite dishes, place orders, manage your profile, and much more, all quickly and easily.': 'FoodApp es una plataforma digital que conecta a clientes y restaurantes, permitiéndote explorar menús, buscar tus platos favoritos, realizar pedidos, gestionar tu perfil y mucho más, todo de forma rápida y sencilla.',
-            'Search dishes by name...': 'Buscar platos por nombre...',
-            'Recommended Dishes': 'Platos Recomendados',
-            'Contact': 'Contacto',
-            'Do you have questions or need help? Contact us via WhatsApp:': '¿Tienes dudas o necesitas ayuda? Contáctanos por WhatsApp:'
-        };
-        let idiomaIngles = false;
-        document.getElementById('btn-idioma').onclick = function() {
-            idiomaIngles = !idiomaIngles;
-            this.textContent = idiomaIngles ? 'Español' : 'English';
-            document.querySelectorAll('h1,h2,h3,label,button,a,p,option,span,th,td, input[placeholder]').forEach(el => {
-                if (el.placeholder && traducciones[el.placeholder]) {
-                    el.placeholder = traducciones[el.placeholder];
+    </script>
+    <div id="toggles-container"></div>
+    <script src="../js/themeToggle.js"></script>
+    <script>
+        // Cargar el componente de toggles
+        fetch('../components/toggles.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('toggles-container').innerHTML = html;
+                // Inicializar el estado guardado
+                const savedTheme = localStorage.getItem('theme');
+                const savedLang = localStorage.getItem('language');
+                if (savedTheme === 'dark') {
+                    document.body.setAttribute('data-theme', 'dark');
+                    document.getElementById('themeToggle').checked = true;
                 }
-                const txt = el.textContent.trim();
-                if (traducciones[txt]) {
-                    el.textContent = traducciones[txt];
+                if (savedLang) {
+                    document.querySelector('.lang-text').textContent = savedLang.toUpperCase();
                 }
             });
-        };
-        let darkMode = document.body.classList.contains('modo-oscuro');
-        document.getElementById('btn-darkmode').onclick = function() {
-            darkMode = !darkMode;
-            document.body.classList.toggle('modo-oscuro', darkMode);
-            this.textContent = darkMode ? '☀️' : '🌙';
-        };
     </script>
 </body>
 </html>

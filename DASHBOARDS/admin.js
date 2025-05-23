@@ -40,28 +40,6 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
 
-  // Mostrar cantidad de usuarios en la tarjeta
-  function actualizarContadorUsuarios() {
-    const usuariosCard = document.querySelector('.dashboard-cards .card-info h3');
-    const usuariosCantidad = document.querySelector('.dashboard-cards .card-info p');
-    let cantidad = 1; // Admin siempre existe
-    let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
-    let admins = JSON.parse(localStorage.getItem('admins')) || [];
-    let restaurantes = JSON.parse(localStorage.getItem('restaurantes')) || [];
-    cantidad += clientes.length + admins.length + restaurantes.length;
-    if (usuariosCard && usuariosCard.textContent.includes('Usuarios')) {
-      usuariosCantidad.textContent = cantidad + (cantidad === 1 ? ' usuario activo' : ' usuarios activos');
-    }
-  }
-  actualizarContadorUsuarios();
-
-  // Mostrar cantidad de platos en la tarjeta (solo los no ocultos)
-  const platosCantidadSpan = document.getElementById('platos-disponibles');
-  if (platosCantidadSpan) {
-    const platos = (JSON.parse(localStorage.getItem('platos')) || []).filter(p => !p.oculto);
-    platosCantidadSpan.textContent = platos.length;
-  }
-
   // --- MODAL DE USUARIOS REGISTRADOS ---
   const usuariosMenu = document.querySelector('.menu li a i.fas.fa-users')?.parentElement;
   if (usuariosMenu) {
@@ -133,7 +111,6 @@ document.addEventListener('DOMContentLoaded', function() {
   // --- ACTUALIZACIÓN PROGRESIVA DE USUARIOS ---
   window.addEventListener('storage', function(e) {
     if (["clientes", "admins", "restaurantes"].includes(e.key)) {
-      actualizarContadorUsuarios();
       // Si el modal de usuarios está abierto, refrescarlo
       if (document.getElementById('usuarios-modal')) {
         mostrarModalUsuarios();
@@ -146,7 +123,6 @@ document.addEventListener('DOMContentLoaded', function() {
   localStorage.setItem = function(key, value) {
     originalSetItem.apply(this, arguments);
     if (["clientes", "admins", "restaurantes"].includes(key)) {
-      actualizarContadorUsuarios();
       if (document.getElementById('usuarios-modal')) {
         mostrarModalUsuarios();
       }

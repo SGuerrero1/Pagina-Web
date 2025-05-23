@@ -7,17 +7,26 @@
     <!-- Enlace correcto al CSS de admin -->
     <link rel="stylesheet" href="admin.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="DASHBOARDS/IMAGENES RESTAURANTE/LOGO FOODAPP.png" />
+    <link rel="stylesheet" href="../styles/darkMode.css">
+    <link rel="stylesheet" href="../styles/shared.css">
 </head>
 <body>
-  <div id="config-buttons-admin" style="position:fixed;top:18px;right:24px;z-index:10001;display:flex;gap:12px;">
-    <button id="btn-idioma" style="padding:7px 18px;border-radius:8px;border:none;background:#2257ff;color:#fff;font-weight:500;cursor:pointer;">English</button>
-    <button id="btn-darkmode" style="padding:7px 18px;border-radius:8px;border:none;background:#222;color:#fff;font-weight:500;cursor:pointer;">🌙</button>
-  </div>
     <!-- Contenido del Dashboard (Administrador) -->
     <div class="dashboard admin-dashboard" id="admin-dashboard">
+        <div class="toggle-container-dashboard">
+            <label class="theme-switch">
+                <input type="checkbox" id="themeToggle">
+                <span class="slider">
+                    <i class="fas fa-sun"></i>
+                    <i class="fas fa-moon"></i>
+                </span>
+            </label>
+            <button class="lang-btn" id="langToggle">ES</button>
+        </div>
         <nav class="sidebar">
             <div class="logo">
-                <i class="fas fa-utensils"></i>
+                <img src="IMAGENES RESTAURANTE/LOGO FOODAPP.png" alt="FoodApp Logo" style="height:48px;object-fit:contain;">
                 <h2>FoodApp</h2>
             </div>
             <ul class="menu">
@@ -50,14 +59,12 @@
                     <div class="card-icon"><i class="fas fa-hamburger"></i></div>
                     <div class="card-info">
                         <h3>Platos</h3>
-                        <p><span id="platos-disponibles">0</span> disponibles</p>
                     </div>
                 </div>
                 <div class="card modern-card" id="card-pedidos">
                     <div class="card-icon"><i class="fas fa-shopping-cart"></i></div>
                     <div class="card-info">
                         <h3>Pedidos</h3>
-                        <p><span id="pedidos-hoy">0</span> hoy</p>
                         <button id="ver-pedidos-admin" class="modern-btn" style="margin-top:10px;width:100%;background:#2257ff;color:#fff;border:none;padding:8px 0;border-radius:8px;font-weight:500;cursor:pointer;">Ver Pedidos</button>
                     </div>
                 </div>
@@ -122,6 +129,7 @@
 
     <script src="script.js"></script>
     <script src="admin.js"></script>
+    <script src="../js/themeToggle.js"></script>
     <script>
         // Función para cerrar sesión con overlay visual (estilo restaurante)
         const logoutButton = document.getElementById('admin-logout');
@@ -321,6 +329,17 @@
                 `).join('');
             }
         });
+        // Función para cambiar el idioma
+        function toggleLanguage() {
+            const langText = document.querySelector('.lang-text');
+            if (langText.textContent === 'ES') {
+                langText.textContent = 'EN';
+                // Aquí puedes agregar la lógica para cambiar los textos a inglés
+            } else {
+                langText.textContent = 'ES';
+                // Aquí puedes agregar la lógica para cambiar los textos a español
+            }
+        }
     </script>
 </body>
 </html>

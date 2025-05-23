@@ -121,7 +121,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (finalizarBtn) {
             finalizarBtn.onclick = async function() {
                 // --- GUARDAR PEDIDO EN BASE DE DATOS ---
-                const cliente = JSON.parse(localStorage.getItem('clienteRegistrado')) || {};
                 let usuarioId = null;
                 let restauranteId = null;
                 try {

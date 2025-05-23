@@ -34,13 +34,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
       // Evitar duplicados por email en local
-      let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
-      if (clientes.some(c => c.email === email)) {
-        mostrarNotificacion('Ya existe un usuario registrado con ese correo.', 'error');
-        if (submitBtn) submitBtn.disabled = false;
-        enviando = false;
-        return;
-      }
       try {
         const res = await fetch('https://pagina-web-wm0x.onrender.com/api/usuarios', {
           method: 'POST',
@@ -54,9 +47,6 @@ document.addEventListener('DOMContentLoaded', function() {
           enviando = false;
           return;
         }
-        // Si fue exitoso, guardar en localStorage
-        clientes.push({ nombre, email, password, rol: 'cliente' });
-        localStorage.setItem('clientes', JSON.stringify(clientes));
         mostrarNotificacion(`¡Registro exitoso! Bienvenido/a ${nombre} a FoodApp`, 'exito');
         document.getElementById('registro-cliente').style.display = 'none';
         document.getElementById('register-btn').style.display = 'block';

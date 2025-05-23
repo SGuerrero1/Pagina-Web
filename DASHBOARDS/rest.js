@@ -138,8 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>`;
             document.body.appendChild(overlay);
             // Limpia datos de sesión
-            localStorage.removeItem('rol');
-            localStorage.removeItem('userRole');
+            localStorage.removeItem('platos');
             // Redirige después de 1.5 segundos
             setTimeout(() => {
                 window.location.href = '../login_page.html';

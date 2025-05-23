@@ -4,22 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Food App</title>
-  <link rel="icon" type="image/png" href="DASHBOARDS/IMAGENES RESTAURANTE/6255e2e41db6c.jpeg" />
+  <link rel="icon" type="image/png" href="DASHBOARDS/IMAGENES RESTAURANTE/LOGO FOODAPP.png" />
   <link rel="stylesheet" href="styles.css" />
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
-</head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+  <link rel="stylesheet" href="styles/darkMode.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="..." crossorigin="anonymous" />
+  <!-- Google Sign In -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 <body>
-  <div style="position:fixed;top:18px;right:24px;z-index:10001;display:flex;gap:12px;">
-    <button id="btn-idioma" style="padding:7px 18px;border-radius:8px;border:none;background:#2257ff;color:#fff;font-weight:500;cursor:pointer;">English</button>
-    <button id="btn-darkmode" style="padding:7px 18px;border-radius:8px;border:none;background:#222;color:#fff;font-weight:500;cursor:pointer;">🌙</button>
-  </div>
   <div class="login-container">
     <div class="left-panel">
       <h1>Bienvenidos a FoodApp</h1>
       <div class="logo">
-        <i class="fas fa-utensils"></i>
+        <img src="DASHBOARDS/IMAGENES RESTAURANTE/LOGO FOODAPP.png" alt="FoodApp Logo" style="height:64px;object-fit:contain;">
       </div>
       <p class="subtitle">Si aún no tienes una cuenta por favor regístrese aquí</p>
       <a href="#" class="register-btn" id="register-btn">Registrarse como Cliente</a>
@@ -70,12 +67,9 @@
     </div>
     <div class="right-panel">
       <h2 class="login-title">Iniciar Sesión</h2>
-      
-      <div class="social-login">
+        <div class="social-login">
         <div class="social-btn" id="login-google" title="Iniciar sesión con Google"><span class="icon"><i class="fab fa-google"></i></span></div>
         <div class="social-btn" id="login-facebook" title="Iniciar sesión con Facebook"><span class="icon"><i class="fab fa-facebook-f"></i></span></div>
-        <div class="social-btn" id="login-instagram" title="Iniciar sesión con Instagram"><span class="icon"><i class="fab fa-instagram"></i></span></div>
-        <div class="social-btn" id="login-twitter" title="Iniciar sesión con Twitter"><span class="icon"><i class="fab fa-twitter"></i></span></div>
       </div>
       
       <p class="separator">o Iniciar Sesión con una cuenta</p>
@@ -86,7 +80,7 @@
         </div>
         <div class="form-group" style="position:relative;">
           <input type="password" id="password" class="form-control" placeholder="Contraseña" required>
-          <button type="button" id="toggle-login-password" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1em;">👁️</button>
+          <button type="button" id="toggle-login-password" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1em;">👁️‍🗨️</button>
         </div>
         <div id="login-error" class="error-message"></div>
         <button type="submit" class="login-btn">Iniciar Sesión</button>
@@ -101,7 +95,7 @@
           <form id="forgot-form">
             <div class="form-group" style="position:relative;">
               <input type="email" id="forgot-email" class="form-control" placeholder="Correo electrónico registrado" required>
-              <button type="button" id="toggle-forgot-password" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1em;">👁️</button>
+              <button type="button" id="toggle-forgot-password" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1em;">👁️‍🗨️</button>
             </div>
             <button type="submit" class="login-btn" style="width:100%;margin-top:10px;">Enviar enlace</button>
             <div id="forgot-msg" style="margin-top:10px;font-size:0.98em;color:#388e3c;text-align:center;"></div>
@@ -112,36 +106,53 @@
   </div>
 
   <!-- Notificaciones toast -->
-  <div id="toast-container" style="position:fixed;top:32px;right:32px;z-index:9999;display:flex;flex-direction:column;gap:12px;"></div>
-
+  <div id="toast-container" style="position:fixed;top:32px;right:32px;z-index:9999;display:flex;flex-direction:column;gap:12px;"></div>  
   <script src="login.js"></script>
   <script src="registro.js"></script>
+  <script src="google-auth-new.js"></script>
+  <script src="js/themeToggle.js"></script>
   <script>
-  // Simulación de login social
-  function socialLogin(nombre, email, img) {
-    // Simula un usuario cliente
-    const cliente = {
-      nombre: nombre,
-      email: email,
-      img: img,
-      rol: 'cliente'
-    };
-    localStorage.setItem('clienteRegistrado', JSON.stringify(cliente));
-    localStorage.setItem('rol', 'cliente');
-    window.location.href = 'DASHBOARDS/dashboard_cliente.html';
+  // Inicialización de Google Sign In
+  function handleGoogleSignIn(response) {
+    try {
+      const credential = response.credential;
+      const payload = JSON.parse(atob(credential.split('.')[1]));
+      
+      const cliente = {
+        nombre: payload.name,
+        email: payload.email,
+        img: payload.picture,
+        rol: 'cliente',
+        googleId: payload.sub
+      };
+    
+      localStorage.setItem('clienteRegistrado', JSON.stringify(cliente));
+      localStorage.setItem('rol', 'cliente');
+      window.location.href = 'DASHBOARDS/dashboard_cliente.html';
+    } catch (e) {
+      console.error('Error en Google Sign In:', e);
+    }
   }
-  document.getElementById('login-google').onclick = function() {
-    socialLogin('Usuario Google', 'google@foodapp.com', 'https://ui-avatars.com/api/?name=Google&background=4285F4&color=fff');
-  };
-  document.getElementById('login-facebook').onclick = function() {
-    socialLogin('Usuario Facebook', 'facebook@foodapp.com', 'https://ui-avatars.com/api/?name=Facebook&background=1877F2&color=fff');
-  };
-  document.getElementById('login-instagram').onclick = function() {
-    socialLogin('Usuario Instagram', 'instagram@foodapp.com', 'https://ui-avatars.com/api/?name=Instagram&background=E1306C&color=fff');
-  };
-  document.getElementById('login-twitter').onclick = function() {
-    socialLogin('Usuario Twitter', 'twitter@foodapp.com', 'https://ui-avatars.com/api/?name=Twitter&background=1DA1F2&color=fff');
-  };
+  window.onload = function() {
+    // Inicializar Google Sign In
+    google.accounts.id.initialize({
+      client_id: '628469741880-5f4ovr8vh5597o60u6g9bjvkcjuum4uc.apps.googleusercontent.com',
+      callback: handleGoogleSignIn
+    });    // Renderizar el botón de Google
+    google.accounts.id.renderButton(
+      document.getElementById('login-google'),
+      { 
+        theme: 'outline', 
+        size: 'large',
+        type: 'icon',
+        shape: 'circle'
+      }
+    );
+
+    // Mensaje temporal para Facebook
+    document.getElementById('login-facebook').onclick = function() {
+      mostrarNotificacion('Inicio de sesión con Facebook se implementará próximamente', 'info');
+    };  };
   // Mostrar/ocultar contraseña login
   document.getElementById('toggle-login-password').onclick = function() {
     const input = document.getElementById('password');
@@ -150,7 +161,7 @@
       this.textContent = '🙈';
     } else {
       input.type = 'password';
-      this.textContent = '👁️';
+      this.textContent = '👁️‍🗨️';
     }
   };
   // Mostrar/ocultar contraseña registro
@@ -162,7 +173,7 @@
         this.textContent = '🙈';
       } else {
         input.type = 'password';
-        this.textContent = '👁️';
+        this.textContent = '👁️‍🗨️';
       }
     };
   });
@@ -176,7 +187,7 @@
         this.textContent = '🙈';
       } else {
         forgotInput.type = 'password';
-        this.textContent = '👁️';
+        this.textContent = '👁️‍🗨️';
       }
     };
     // Por defecto, el campo es email, lo cambiamos a password para permitir mostrar/ocultar
@@ -211,59 +222,6 @@
       setTimeout(() => toast.remove(), 400);
     }, 2200);
   }
-
-  // --- CAMBIO DE IDIOMA Y MODO OSCURO ---
-  const traducciones = {
-    'Bienvenidos a FoodApp': 'Welcome to FoodApp',
-    'Si aún no tienes una cuenta por favor regístrese aquí': 'If you do not have an account, please register here',
-    'Registrarse como Cliente': 'Register as Customer',
-    'Nombre completo': 'Full Name',
-    'Correo electrónico': 'Email',
-    'Contraseña': 'Password',
-    'Confirmar contraseña': 'Confirm Password',
-    'Teléfono': 'Phone',
-    'Dirección': 'Address',
-    'Ciudad': 'City',
-    'Código postal': 'Postal Code',
-    'Seleccione país:': 'Select country:',
-    'Colombia': 'Colombia',
-    'Acepto los términos y condiciones': 'I accept the terms and conditions',
-    'Crear Cuenta': 'Create Account',
-    'Iniciar Sesión': 'Login',
-    'o Iniciar Sesión con una cuenta': 'or Login with an account',
-    'Usuario': 'Username',
-    '¿Olvidaste tu contraseña?': 'Forgot your password?',
-    'Recuperar Contraseña': 'Recover Password',
-    'Enviar enlace': 'Send link',
-    'Bienvenido': 'Welcome',
-    'Iniciar sesión con Google': 'Login with Google',
-    'Iniciar sesión con Facebook': 'Login with Facebook',
-    'Iniciar sesión con Instagram': 'Login with Instagram',
-    'Iniciar sesión con Twitter': 'Login with Twitter',
-  };
-  let idiomaIngles = false;
-  document.getElementById('btn-idioma').onclick = function() {
-    idiomaIngles = !idiomaIngles;
-    this.textContent = idiomaIngles ? 'Español' : 'English';
-    // Cambia textos clave
-    document.querySelectorAll('h1,h2,h3,label,button,a,p,option').forEach(el => {
-      if (idiomaIngles) {
-        if (traducciones[el.textContent.trim()]) el.textContent = traducciones[el.textContent.trim()];
-      } else {
-        // Revertir a español
-        for (const [es, en] of Object.entries(traducciones)) {
-          if (el.textContent.trim() === en) el.textContent = es;
-        }
-      }
-    });
-  };
-  // --- MODO OSCURO ---
-  let darkMode = false;
-  document.getElementById('btn-darkmode').onclick = function() {
-    darkMode = !darkMode;
-    document.body.classList.toggle('modo-oscuro', darkMode);
-    this.textContent = darkMode ? '☀️' : '🌙';
-  };
   </script>
 </body>
 </html>

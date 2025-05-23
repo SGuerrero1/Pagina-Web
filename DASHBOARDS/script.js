@@ -51,8 +51,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 loginContainer.style.display = 'flex';
                 break;
         }
-        // Guardar sesión en localStorage
-        localStorage.setItem('userRole', role);
     }
 
     // Función para cerrar sesión
@@ -64,7 +62,6 @@ document.addEventListener('DOMContentLoaded', function() {
         usernameInput.value = '';
         passwordInput.value = '';
         errorMessage.textContent = '';
-        localStorage.removeItem('userRole');
     }
 
     // Manejar el envío del formulario de inicio de sesión
@@ -127,19 +124,12 @@ document.addEventListener('DOMContentLoaded', function() {
             logout();
         });
     }
-
-    // Al cargar la página, revisar sesión almacenada
-    const storedRole = localStorage.getItem('userRole');
-    if (storedRole) {
-        showDashboard(storedRole);
-    }
 });
 
 // En páginas donde exista un botón global de logout
 const logoutBtn = document.getElementById('logout-btn');
 if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
-        localStorage.removeItem('userRole');
         window.location.href = 'login.html';
     });
 }

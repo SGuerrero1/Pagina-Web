@@ -6,12 +6,39 @@
     <title>FoodApp - Panel de Restaurante</title>
     <link rel="stylesheet" href="restaurante.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="DASHBOARDS/IMAGENES RESTAURANTE/LOGO FOODAPP.png" />
+    <link rel="stylesheet" href="../styles/darkMode.css">
+    <link rel="stylesheet" href="../styles/shared.css">
 </head>
 <body>
+    <!-- Toggle container for theme and language -->
+    <div class="toggle-container">
+        <label class="theme-toggle">
+            <input type="checkbox" id="themeToggle" onclick="toggleTheme()">
+            <span class="slider">
+                <i class="fas fa-sun"></i>
+                <i class="fas fa-moon"></i>
+            </span>
+        </label>
+        <button class="language-toggle" onclick="toggleLanguage()">
+            <span class="lang-text">ES</span>
+        </button>
+    </div>
+    <!-- Contenido del Dashboard (Restaurante) -->
     <div class="dashboard restaurant-dashboard" id="restaurant-dashboard">
+        <div class="toggle-container-dashboard">
+            <label class="theme-switch">
+                <input type="checkbox" id="themeToggle">
+                <span class="slider">
+                    <i class="fas fa-sun"></i>
+                    <i class="fas fa-moon"></i>
+                </span>
+            </label>
+            <button class="lang-btn" id="langToggle">ES</button>
+        </div>
         <nav class="sidebar">
             <div class="logo">
-                <i class="fas fa-utensils"></i>
+                <img src="IMAGENES RESTAURANTE/LOGO FOODAPP.png" alt="FoodApp Logo" style="height:48px;object-fit:contain;">
                 <h2>FoodApp</h2>
             </div>
             <ul class="menu">
@@ -118,6 +145,7 @@
     <div id="toast-container" style="position:fixed;top:32px;right:32px;z-index:9999;display:flex;flex-direction:column;gap:12px;"></div>
     <script src="script.js"></script>
     <script src="rest.js"></script>
+    <script src="../js/themeToggle.js"></script>
     <script>
   // --- CAMBIO DE IDIOMA Y MODO OSCURO ---
   const traducciones = {
@@ -852,6 +880,19 @@
                 `).join('');
             }
         });
+    </script>
+    <script>
+        // Función para cambiar el idioma
+        function toggleLanguage() {
+            const langText = document.querySelector('.lang-text');
+            if (langText.textContent === 'ES') {
+                langText.textContent = 'EN';
+                // Aquí puedes agregar la lógica para cambiar los textos a inglés
+            } else {
+                langText.textContent = 'ES';
+                // Aquí puedes agregar la lógica para cambiar los textos a español
+            }
+        }
     </script>
 </body>
 </html>
