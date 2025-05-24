@@ -133,3 +133,38 @@
 .theme-switch .slider .fa-moon {
     margin-right: 4px;
 }
+
+/* --- RESPONSIVE IMPROVEMENTS FOR TOGGLES AND SHARED ELEMENTS --- */
+@media (max-width: 600px) {
+  .toggle-container, .toggle-container-dashboard {
+    right: 2vw;
+    left: unset;
+    bottom: 2vw;
+    max-width: 95vw;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 4px;
+    border-radius: 8px;
+    font-size: 0.95em;
+  }
+  .theme-switch, .theme-toggle {
+    width: 44px;
+    height: 24px;
+  }
+  .theme-switch .slider, .theme-toggle .slider {
+    padding: 2px 6px;
+    font-size: 13px;
+  }
+  .theme-switch .slider:before, .theme-toggle .slider:before {
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    bottom: 2px;
+  }
+}
+@media (max-width: 400px) {
+  .toggle-container, .toggle-container-dashboard {
+    font-size: 0.9em;
+    padding: 2px;
+  }
+}

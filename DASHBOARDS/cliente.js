@@ -3,6 +3,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Inicializa el carrito desde localStorage o vacío
     let cart = JSON.parse(localStorage.getItem('cartCliente')) || [];
+    // Inicializa el cliente globalmente
+    window.cliente = JSON.parse(localStorage.getItem('clienteRegistrado')) || {};
 
     // Función para guardar el carrito
     function saveCart() {
@@ -70,18 +72,18 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!modal) {
             modal = document.createElement('div');
             modal.id = 'cart-modal';
-            modal.style.position = 'fixed';
-            modal.style.top = '0';
-            modal.style.left = '0';
-            modal.style.width = '100vw';
-            modal.style.height = '100vh';
-            modal.style.background = 'rgba(0,0,0,0.4)';
-            modal.style.display = 'flex';
-            modal.style.alignItems = 'center';
-            modal.style.justifyContent = 'center';
-            modal.style.zIndex = 10000;
             document.body.appendChild(modal);
         }
+        modal.style.display = 'flex';
+        modal.style.position = 'fixed';
+        modal.style.top = '0';
+        modal.style.left = '0';
+        modal.style.width = '100vw';
+        modal.style.height = '100vh';
+        modal.style.background = 'rgba(0,0,0,0.4)';
+        modal.style.alignItems = 'center';
+        modal.style.justifyContent = 'center';
+        modal.style.zIndex = 10000;
         modal.innerHTML = `
             <div style="background:#fff;padding:32px 24px;border-radius:12px;min-width:320px;max-width:90vw;max-height:80vh;overflow:auto;position:relative;">
                 <h2 style="margin-bottom:18px;">Tu Carrito</h2>
@@ -99,14 +101,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             </li>
                         `).join('')}
                     </ul>
-                    <hr style='margin:18px 0;'>
                     <div style='font-weight:bold;font-size:18px;'>Total: ${calcularTotal()}</div>
                     <button id='finalizar-compra' style='margin-top:18px;background:#ff5722;color:#fff;border:none;padding:10px 24px;border-radius:6px;font-size:16px;cursor:pointer;'>Finalizar Compra</button>`
                 }
             </div>
         `;
         // Cerrar modal
-        modal.querySelector('#close-cart-modal').onclick = () => modal.remove();
+        modal.querySelector('#close-cart-modal').onclick = () => { modal.style.display = 'none'; };
         // Quitar item
         modal.querySelectorAll('.remove-item').forEach(btn => {
             btn.onclick = function() {
@@ -120,24 +121,20 @@ document.addEventListener('DOMContentLoaded', function() {
         const finalizarBtn = modal.querySelector('#finalizar-compra');
         if (finalizarBtn) {
             finalizarBtn.onclick = async function() {
-                // --- GUARDAR PEDIDO EN BASE DE DATOS ---
                 let usuarioId = null;
                 let restauranteId = null;
                 try {
-                    // Buscar usuario por email
-                    const resUser = await fetch('https://pagina-web-wm0x.onrender.com/api/usuarios?email=' + encodeURIComponent(cliente.email));
+                    const resUser = await fetch('https://pagina-web-wm0x.onrender.com/api/usuarios?email=' + encodeURIComponent(window.cliente.email));
                     const userData = await resUser.json();
                     usuarioId = userData.id;
-                    // Buscar restaurante (asume 1 restaurante demo)
                     const resRest = await fetch('https://pagina-web-wm0x.onrender.com/api/restaurantes');
                     const restList = await resRest.json();
                     restauranteId = restList[0]?.id || 1;
                 } catch {}
-                // Crear pedido
                 const pedido = {
                     usuario_id: usuarioId,
                     restaurante_id: restauranteId,
-                    cliente: cliente.nombre || cliente.email || 'Cliente',
+                    cliente: window.cliente.nombre || window.cliente.email || 'Cliente',
                     platos: cart.map(item => ({ nombre: item.nombre, cantidad: item.cantidad })),
                     total: parseFloat(calcularTotal().replace(/[^\d\.]/g, '')),
                     estado: 'Pendiente',
@@ -153,16 +150,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 } catch {
                     mostrarNotificacion('No se pudo registrar el pedido en la base de datos.', 'error');
                 }
-                // --- GUARDAR PEDIDO EN LOCALSTORAGE PARA DASHBOARDS ---
                 let pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
                 pedidos.push(pedido);
                 localStorage.setItem('pedidos', JSON.stringify(pedidos));
-                // Disparar evento de storage manualmente para otras pestañas
                 window.dispatchEvent(new Event('storage'));
                 guardarCompraEnHistorial([...cart], calcularTotal());
                 cart = [];
                 saveCart();
-                modal.remove();
+                modal.style.display = 'none';
             };
         }
     }
@@ -528,7 +523,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const foodGrid = document.getElementById('food-grid');
         if (!foodGrid) return;
         if (reset) foodGrid.innerHTML = '';
-        let platos = platosFiltrados.length ? platosFiltrados : (JSON.parse(localStorage.getItem('platos')) || []);
+        // Si hay búsqueda activa, solo mostrar los filtrados
+        let platos = platosFiltrados.length > 0 ? platosFiltrados : (JSON.parse(localStorage.getItem('platos')) || []);
         if (platos.length === 0) {
             if (reset) foodGrid.innerHTML += '<div style="color:#888;margin:20px 0;">No hay platos disponibles.</div>';
             return;
@@ -542,7 +538,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let tieneImagen = plato.img && plato.img.trim() !== '';
             card.innerHTML = `
                 <div class="food-image">
-                    ${tieneImagen ? `<img src="${plato.img}" alt="${plato.nombre}" onerror="this.parentNode.innerHTML='<div style=\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#ccc;color:#555;font-weight:bold;font-size:1.1em;\'>Sin imagen</div>'">` : `<div style='width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#ccc;color:#555;font-weight:bold;font-size:1.1em;'>Sin imagen</div>`}
+                    ${tieneImagen ? `<img src="${plato.img}" alt="${plato.nombre}" onerror="this.parentNode.innerHTML='<div style='width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#ccc;color:#555;font-weight:bold;font-size:1.1em;'>Sin imagen</div>'">` : `<div style='width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#ccc;color:#555;font-weight:bold;font-size:1.1em;'>Sin imagen</div>`}
                 </div>
                 <div class="food-info">
                     <h3>${plato.nombre}</h3>
@@ -593,17 +589,25 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- BUSCADOR DE PLATOS: Buscar solo por nombre exacto creado ---
+    // --- BUSCADOR DE PLATOS: Buscar por nombre desde backend ---
     const buscador = document.getElementById('buscador-platos');
     if (buscador) {
-        buscador.addEventListener('input', function() {
+        buscador.addEventListener('input', async function() {
             const query = buscador.value.trim().toLowerCase();
             if (query === '') {
                 platosFiltrados = [];
                 renderPlatos(1, true);
                 return;
             }
-            platosFiltrados = (JSON.parse(localStorage.getItem('platos')) || []).filter(plato => plato.nombre && plato.nombre.toLowerCase().includes(query));
+            // Buscar solo en backend
+            let platosBackend = [];
+            try {
+                const res = await fetch('https://pagina-web-wm0x.onrender.com/api/platos?nombre=' + encodeURIComponent(query));
+                if (res.ok) {
+                    platosBackend = await res.json();
+                }
+            } catch {}
+            platosFiltrados = platosBackend;
             renderPlatos(1, true);
         });
     }

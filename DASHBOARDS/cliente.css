@@ -270,9 +270,18 @@ header {
   background-color: #e64a19;
 }
 
+@media (max-width: 1200px) {
+  .content {
+    padding: 18px 2vw;
+  }
+  .food-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+}
 @media (max-width: 900px) {
   .dashboard {
     flex-direction: column;
+    min-height: unset;
   }
   .sidebar {
     width: 100%;
@@ -310,58 +319,95 @@ header {
     padding: 24px 8px;
   }
 }
-@media (max-width: 600px) {
-  .food-grid {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-  .categories {
-    gap: 10px;
-  }
-  .content {
-    padding: 12px 2vw;
-  }
+@media (max-width: 700px) {
   .sidebar {
-    padding: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0 8px;
   }
   .sidebar .logo {
+    padding: 10px 0;
     font-size: 1em;
-    padding: 10px 8px;
+  }
+  .menu {
+    flex-direction: column;
+    width: 100%;
+  }
+  .menu li a {
+    padding: 10px 10px;
+    font-size: 0.98em;
   }
 }
-.politicas-container {
-  text-align: center;
-  margin-top: 20px;
-}
-
-.btn-politicas {
-  display: inline-block;
-  background: linear-gradient(135deg, #2257ff, #558aff);
-  color: #fff;
-  padding: 12px 24px;
-  font-weight: bold;
-  border-radius: 8px;
-  text-decoration: none;
-  transition: background 0.3s ease, transform 0.2s ease;
-  box-shadow: 0 4px 14px rgba(34,87,255,0.3);
-  font-size: 1em;
-}
-
-.btn-politicas:hover {
-  background: linear-gradient(135deg, #1a48d8, #3f6edc);
-  transform: translateY(-2px);
-}
-
-.btn-politicas i {
-  margin-right: 8px;
-}
-
 @media (max-width: 600px) {
+  .dashboard {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    min-width: unset;
+    padding: 0;
+    box-shadow: none;
+  }
+  .sidebar .logo {
+    font-size: 0.95em;
+    padding: 8px 4px;
+  }
+  .content {
+    padding: 10px 1vw;
+  }
+  .food-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .categories {
+    gap: 8px;
+  }
+  .search-bar input {
+    font-size: 15px;
+    padding: 10px;
+  }
+  .search-bar button {
+    padding: 0 10px;
+    font-size: 15px;
+  }
+  .app-description, .contact-section {
+    padding: 12px 8px;
+    font-size: 0.98em;
+  }
   .btn-politicas {
-    padding: 10px 18px;
+    padding: 8px 12px;
+    font-size: 0.93em;
+  }
+}
+@media (max-width: 400px) {
+  .sidebar .logo h2 {
+    font-size: 1em;
+  }
+  .food-info h3 {
+    font-size: 1em;
+  }
+  .food-info p {
     font-size: 0.95em;
   }
 }
+
+/* Make toggle and floating elements responsive */
+.toggle-container-dashboard, .toggle-container {
+  right: 2vw;
+  left: unset;
+  bottom: 2vw;
+  max-width: 95vw;
+  flex-wrap: wrap;
+}
+@media (max-width: 600px) {
+  .toggle-container-dashboard, .toggle-container {
+    gap: 6px;
+    padding: 4px;
+    border-radius: 8px;
+    font-size: 0.95em;
+  }
+}
+
 /* Modal oscuro claro */
 .modal-box {
   background: #fff;

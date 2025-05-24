@@ -67,20 +67,85 @@
             <!-- Apartado de contacto -->
             <section class="contact-section" style="margin: 36px 0 0 0; padding: 18px 22px; background: #f0f7ff; border-radius: 10px; box-shadow: 0 2px 8px rgba(34,87,255,0.07);">
                 <h2 style="color:#2257ff; margin-top:0;">Contacto</h2>
-                <p style="font-size:1.08em; color:#333; margin-bottom:0;">
+                <p style="font-size:1.08em; color:#333; margin-bottom:18px;">
                     ¿Tienes dudas o necesitas ayuda? Contáctanos por WhatsApp:
-                    <a href="https://wa.me/573203523841" target="_blank" style="color:#25d366; font-weight:bold; text-decoration:none; margin-left:8px;"><i class="fab fa-whatsapp"></i> 3203523841</a>
                 </p>
+                <div style="display:flex;justify-content:center;">
+                    <a href="https://wa.me/573203523841" target="_blank" style="
+                        display:inline-flex;
+                        align-items:center;
+                        gap:10px;
+                        background:linear-gradient(90deg,#25d366 0%,#128c7e 100%);
+                        color:#fff;
+                        font-weight:700;
+                        font-size:1.18em;
+                        padding:14px 32px;
+                        border-radius:32px;
+                        box-shadow:0 4px 18px rgba(34,87,255,0.13);
+                        border:none;
+                        text-decoration:none;
+                        transition:background 0.2s,box-shadow 0.2s,transform 0.1s;
+                        margin:0 auto 8px auto;
+                    "
+                    onmouseover="this.style.background='linear-gradient(90deg,#128c7e 0%,#25d366 100%)';this.style.transform='scale(1.04)';this.style.boxShadow='0 8px 32px rgba(34,87,255,0.18)';"
+                    onmouseout="this.style.background='linear-gradient(90deg,#25d366 0%,#128c7e 100%)';this.style.transform='scale(1)';this.style.boxShadow='0 4px 18px rgba(34,87,255,0.13)';"
+                    >
+                        <i class="fab fa-whatsapp" style="font-size:1.4em;"></i> 3203523841
+                    </a>
+                </div>
             </section>
             <!-- Botón de Políticas de Seguridad -->
-<div class="politicas-container">
-    <a href="../politicas_seguridad.html" class="btn-politicas">
-        <i class="fas fa-shield-alt"></i> Políticas de Seguridad
+<div class="politicas-container" style="display:flex;justify-content:center;margin-top:24px;">
+    <a href="../politicas_seguridad.html" class="btn-politicas" id="btn-politicas" target="_blank" style="
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: linear-gradient(90deg, #2257ff 0%, #43e97b 100%);
+        color: #fff;
+        font-weight: 600;
+        font-size: 1.08em;
+        padding: 14px 32px;
+        border-radius: 32px;
+        box-shadow: 0 4px 18px rgba(34,87,255,0.13);
+        border: none;
+        text-decoration: none;
+        transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+        cursor: pointer;
+        letter-spacing: 0.5px;
+        margin: 0 auto;
+    "
+    onmouseover="this.style.background='linear-gradient(90deg,#43e97b 0%,#2257ff 100%)';this.style.transform='scale(1.04)';this.style.boxShadow='0 8px 32px rgba(34,87,255,0.18)';"
+    onmouseout="this.style.background='linear-gradient(90deg,#2257ff 0%,#43e97b 100%)';this.style.transform='scale(1)';this.style.boxShadow='0 4px 18px rgba(34,87,255,0.13)';"
+    >
+        <i class="fas fa-shield-alt" style="font-size:1.3em;"></i>
+        Políticas de Seguridad
     </a>
 </div>
+<!-- Aseguro que el modal del carrito pueda ser insertado correctamente -->
+<div id="cart-modal" style="display:none;"></div>
 
         </main>
     </div>
+    <script src="../js/themeToggle.js"></script>
+    <script>
+        // Cargar el componente de toggles
+        fetch('../components/toggles.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('toggles-container').innerHTML = html;
+                // Inicializar el estado guardado
+                const savedTheme = localStorage.getItem('theme');
+                const savedLang = localStorage.getItem('language');
+                if (savedTheme === 'dark') {
+                    document.body.setAttribute('data-theme', 'dark');
+                    document.getElementById('themeToggle').checked = true;
+                }
+                if (savedLang) {
+                    document.querySelector('.lang-text').textContent = savedLang.toUpperCase();
+                }
+            });
+    </script>
+    <!-- Muevo el script de cliente.js al final para asegurar que el DOM esté cargado -->
     <script src="cliente.js"></script>
     <script>
         // Buscador funcional: busca por nombre de plato creado
@@ -139,24 +204,5 @@
 
     </script>
     <div id="toggles-container"></div>
-    <script src="../js/themeToggle.js"></script>
-    <script>
-        // Cargar el componente de toggles
-        fetch('../components/toggles.html')
-            .then(response => response.text())
-            .then(html => {
-                document.getElementById('toggles-container').innerHTML = html;
-                // Inicializar el estado guardado
-                const savedTheme = localStorage.getItem('theme');
-                const savedLang = localStorage.getItem('language');
-                if (savedTheme === 'dark') {
-                    document.body.setAttribute('data-theme', 'dark');
-                    document.getElementById('themeToggle').checked = true;
-                }
-                if (savedLang) {
-                    document.querySelector('.lang-text').textContent = savedLang.toUpperCase();
-                }
-            });
-    </script>
 </body>
 </html>

@@ -11,30 +11,12 @@
     <link rel="stylesheet" href="../styles/shared.css">
 </head>
 <body>
-    <!-- Toggle container for theme and language -->
-    <div class="toggle-container">
-        <label class="theme-toggle">
-            <input type="checkbox" id="themeToggle" onclick="toggleTheme()">
-            <span class="slider">
-                <i class="fas fa-sun"></i>
-                <i class="fas fa-moon"></i>
-            </span>
-        </label>
-        <button class="language-toggle" onclick="toggleLanguage()">
-            <span class="lang-text">ES</span>
-        </button>
-    </div>
     <!-- Contenido del Dashboard (Restaurante) -->
     <div class="dashboard restaurant-dashboard" id="restaurant-dashboard">
         <div class="toggle-container-dashboard">
             <label class="theme-switch">
                 <input type="checkbox" id="themeToggle">
-                <span class="slider">
-                    <i class="fas fa-sun"></i>
-                    <i class="fas fa-moon"></i>
-                </span>
             </label>
-            <button class="lang-btn" id="langToggle">ES</button>
         </div>
         <nav class="sidebar">
             <div class="logo">
@@ -67,13 +49,6 @@
                     <div class="card-info">
                         <h3>Pedidos Pendientes</h3>
                         <p id="pedidos-pendientes">0 pedidos</p>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-icon"><i class="fas fa-hamburger"></i></div>
-                    <div class="card-info">
-                        <h3>Platos Activos</h3>
-                        <p id="platos-activos">0 platos</p>
                     </div>
                 </div>
                 <div class="card">
@@ -878,6 +853,39 @@
                         <td>${u.lat && u.lon ? `<a href="https://www.google.com/maps?q=${u.lat},${u.lon}" target="_blank" style="color:#2257ff;text-decoration:underline;">Ver en mapa</a>` : '-'}</td>
                     </tr>
                 `).join('');
+            }
+        });
+        // Actualización automática de ubicaciones de clientes
+        window.addEventListener('storage', function(e) {
+            if (e.key && e.key.startsWith('ubicacionCliente_')) {
+                setTimeout(function() {
+                    const tbody = document.querySelector('#tabla-ubicaciones-clientes-rest tbody');
+                    if (!tbody) return;
+                    let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
+                    let ubicaciones = [];
+                    clientes.forEach(c => {
+                        const userKey = c.email;
+                        const ubic = localStorage.getItem('ubicacionCliente_' + userKey);
+                        if (ubic) {
+                            const u = JSON.parse(ubic);
+                            ubicaciones.push({ nombre: c.nombre, email: c.email, lat: u.lat, lon: u.lon, fecha: u.fecha });
+                        }
+                    });
+                    if (ubicaciones.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" style="color:#888;text-align:center;padding:18px;">No hay ubicaciones enviadas.</td></tr>';
+                    } else {
+                        tbody.innerHTML = ubicaciones.map(u => `
+                            <tr>
+                                <td>${u.nombre}</td>
+                                <td>${u.email}</td>
+                                <td>${u.lat != null ? u.lat.toFixed(5) : '-'}</td>
+                                <td>${u.lon != null ? u.lon.toFixed(5) : '-'}</td>
+                                <td>${u.fecha ? new Date(u.fecha).toLocaleString() : '-'}</td>
+                                <td>${u.lat && u.lon ? `<a href="https://www.google.com/maps?q=${u.lat},${u.lon}" target="_blank" style="color:#2257ff;text-decoration:underline;">Ver en mapa</a>` : '-'}</td>
+                            </tr>
+                        `).join('');
+                    }
+                }, 200);
             }
         });
     </script>

@@ -81,6 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const precio = modal.querySelector('#plato-precio').value.trim();
             const imgUrl = modal.querySelector('#plato-img-url').value.trim();
             const imgFile = modal.querySelector('#plato-img-file').files[0];
+            const MAX_IMG_BASE64 = 2000000; // 2 MB aprox en base64
             if (!nombre || !precio) {
                 mostrarNotificacion('Nombre y precio son obligatorios.', 'error');
                 return;
@@ -89,11 +90,19 @@ document.addEventListener('DOMContentLoaded', function() {
             if (imgFile) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
+                    if (e.target.result.length > MAX_IMG_BASE64) {
+                        mostrarNotificacion('La imagen es demasiado grande. Máximo permitido: 2 MB.', 'error');
+                        return;
+                    }
                     guardarPlato({nombre, descripcion, precio, img: e.target.result});
                     modal.remove();
                 };
                 reader.readAsDataURL(imgFile);
             } else {
+                if (imgUrl.startsWith('data:image') && imgUrl.length > MAX_IMG_BASE64) {
+                    mostrarNotificacion('La imagen es demasiado grande. Máximo permitido: 2 MB.', 'error');
+                    return;
+                }
                 guardarPlato({nombre, descripcion, precio, img: imgUrl});
                 modal.remove();
             }
@@ -101,10 +110,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function guardarPlato(plato) {
-        let platos = JSON.parse(localStorage.getItem('platos')) || [];
-        platos.push(plato);
-        localStorage.setItem('platos', JSON.stringify(platos));
-        mostrarNotificacion('Plato agregado correctamente.', 'exito');
+        // Guardar en backend
+        fetch('https://pagina-web-wm0x.onrender.com/api/platos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(plato)
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Error al guardar en la base de datos');
+            return res.json();
+        })
+        .then(data => {
+            mostrarNotificacion('Plato agregado correctamente en la base de datos.', 'exito');
+            // Opcional: actualizar localStorage para mantener sincronía local
+            let platos = JSON.parse(localStorage.getItem('platos')) || [];
+            platos.push(data);
+            localStorage.setItem('platos', JSON.stringify(platos));
+        })
+        .catch(() => {
+            mostrarNotificacion('Error al guardar el plato en el backend.', 'error');
+        });
     }
 
     // Enlazar botón de menú "Nuevo Plato"
