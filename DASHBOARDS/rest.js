@@ -162,8 +162,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 <span>¡Has cerrado sesión correctamente!</span>
             </div>`;
             document.body.appendChild(overlay);
-            // Limpia datos de sesión
-            localStorage.removeItem('platos');
+            // Limpia solo datos de sesión, NO los platos
+            localStorage.removeItem('rol');
+            localStorage.removeItem('userRole');
             // Redirige después de 1.5 segundos
             setTimeout(() => {
                 window.location.href = '../login_page.html';
@@ -270,7 +271,7 @@ document.addEventListener('DOMContentLoaded', function() {
           <td>#${idx + 1}</td>
           <td>${p.cliente || '-'}</td>
           <td>${Array.isArray(p.platos) ? p.platos.map(pl=>`${pl.nombre} <span style='color:#ff5722;'>x${pl.cantidad}</span>`).join(', ') : '-'}</td>
-          <td>${p.total}</td>
+          <td>$${Number(p.total).toLocaleString('es-CO', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
           <td><span class="status ${p.estado === 'Pendiente' ? 'pending' : (p.estado === 'Aceptado' ? 'in-progress' : (p.estado === 'Entregado' ? 'ready' : 'rechazado'))}">${p.estado || 'Pendiente'}</span></td>
           <td>
             ${p.estado === 'Pendiente' ? `
@@ -357,5 +358,64 @@ document.addEventListener('DOMContentLoaded', function() {
       let suma = parseFloat(pedido.total) || 0;
       total += suma;
       ingresosElem.textContent = `$${total.toFixed(2)}`;
+    }
+    // --- MENÚ PLATOS: Mostrar todos los platos del backend ---
+    const menuPlatos = document.querySelector('.menu .fa-hamburger')?.closest('a');
+    if (menuPlatos) {
+        menuPlatos.onclick = async function(e) {
+            e.preventDefault();
+            let modal = document.getElementById('platos-modal-rest');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'platos-modal-rest';
+                modal.style.position = 'fixed';
+                modal.style.top = '0';
+                modal.style.left = '0';
+                modal.style.width = '100vw';
+                modal.style.height = '100vh';
+                modal.style.background = 'rgba(0,0,0,0.4)';
+                modal.style.display = 'flex';
+                modal.style.alignItems = 'center';
+                modal.style.justifyContent = 'center';
+                modal.style.zIndex = 10000;
+                document.body.appendChild(modal);
+            }
+            // Obtener platos del backend
+            let platos = [];
+            try {
+                const res = await fetch('https://pagina-web-wm0x.onrender.com/api/platos');
+                if (res.ok) {
+                    platos = await res.json();
+                }
+            } catch {}
+            modal.innerHTML = `
+                <div style="background:#fff;padding:36px 28px 28px 28px;border-radius:22px;min-width:350px;max-width:98vw;max-height:92vh;overflow:auto;position:relative;box-shadow:0 10px 40px rgba(34,87,255,0.13);font-family:'Segoe UI',Arial,sans-serif;">
+                    <div style='display:flex;gap:12px;justify-content:flex-end;margin-bottom:12px;'>
+                        <button id="close-platos-modal-rest" style="padding:7px 18px;border-radius:8px;border:none;background:#2257ff;color:#fff;font-weight:500;cursor:pointer;">Cerrar</button>
+                    </div>
+                    <h2 style='margin-bottom:18px;text-align:center;'>Platos Creados</h2>
+                    <table style='width:100%;border-collapse:collapse;'>
+                        <thead>
+                            <tr style='background:#fff7f0;'>
+                                <th style='padding:10px 8px;text-align:left;'>Nombre</th>
+                                <th style='padding:10px 8px;text-align:left;'>Precio</th>
+                                <th style='padding:10px 8px;text-align:left;'>Imagen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${platos.length === 0 ? `<tr><td colspan='3' style='color:#888;text-align:center;padding:18px;'>No hay platos creados.</td></tr>` : platos.map(p => `
+                                <tr>
+                                    <td style='padding:8px 8px;'>${p.nombre}</td>
+                                    <td style='padding:8px 8px;'>${p.precio}</td>
+                                    <td style='padding:8px 8px;'>${p.img ? `<img src='${p.img}' alt='' style='width:48px;height:48px;object-fit:cover;border-radius:6px;'>` : '<span style=\'color:#bbb;\'>Sin imagen</span>'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            modal.querySelector('#close-platos-modal-rest').onclick = () => modal.remove();
+            modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+        };
     }
 });
